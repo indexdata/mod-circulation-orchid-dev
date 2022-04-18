@@ -51,7 +51,7 @@ public class RequestHoldShelfClearanceResource extends Resource {
    * The optimal number of identifiers that will not exceed the permissible length
    * of the URI in according to the RFC 2616
    */
-  private static final int BATCH_SIZE = 40;
+  private static final int BATCH_SIZE = 70;
 
   /**
    * Temporary solution caused by batch processing of items (fetching requests for a batch
