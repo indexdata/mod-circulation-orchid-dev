@@ -153,10 +153,13 @@ public class LostItemPolicy extends Policy {
   }
 
   public boolean canAgeLoanToLost(boolean isRecalled, ZonedDateTime loanDueDate) {
+    // comment out due to https://issues.folio.org/browse/CIRC-1557
+    /*
     if (actualCostFee.isChargeable() && !ageToLostProcessingFee.isChargeable()) {
       // actual cost is not supported now
       return false;
     }
+    */
 
     final Period periodShouldPassSinceOverdue = isRecalled
       ? recalledItemAgedToLostAfterOverdueInterval : itemAgedToLostAfterOverdueInterval;
