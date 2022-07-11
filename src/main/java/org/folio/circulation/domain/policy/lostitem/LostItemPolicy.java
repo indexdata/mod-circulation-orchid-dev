@@ -157,6 +157,7 @@ public class LostItemPolicy extends Policy {
   }
 
   public boolean canAgeLoanToLost(boolean isRecalled, ZonedDateTime loanDueDate) {
+    log.info("test CIRC-1557...");
     if (actualCostFee.isChargeable() && !ageToLostProcessingFee.isChargeable()) {
       log.info("actual cost is not supported now (test)");
     }
