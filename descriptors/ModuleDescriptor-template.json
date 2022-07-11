@@ -804,7 +804,7 @@
             "scheduled-notice-storage.scheduled-notices.item.post"
           ],
           "unit": "minute",
-          "delay": "30"
+          "delay": "1"
         },
         {
           "methods": [

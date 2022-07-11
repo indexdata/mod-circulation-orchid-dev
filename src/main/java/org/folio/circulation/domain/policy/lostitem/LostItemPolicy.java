@@ -12,9 +12,12 @@ import static org.folio.circulation.support.json.JsonPropertyFetcher.getNestedSt
 import static org.folio.circulation.support.json.JsonPropertyFetcher.getObjectProperty;
 import static org.folio.circulation.support.json.JsonPropertyFetcher.getProperty;
 
+import java.lang.invoke.MethodHandles;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.policy.Period;
 import org.folio.circulation.domain.policy.Policy;
 import org.folio.circulation.domain.policy.lostitem.itemfee.ActualCostFee;
@@ -24,6 +27,7 @@ import org.folio.circulation.domain.policy.lostitem.itemfee.ChargeableFee;
 import io.vertx.core.json.JsonObject;
 
 public class LostItemPolicy extends Policy {
+  final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private final AutomaticallyChargeableFee declareLostProcessingFee;
   private final AutomaticallyChargeableFee setCostFee;
   private final ChargeableFee actualCostFee;
@@ -153,6 +157,11 @@ public class LostItemPolicy extends Policy {
   }
 
   public boolean canAgeLoanToLost(boolean isRecalled, ZonedDateTime loanDueDate) {
+    if (actualCostFee.isChargeable() && !ageToLostProcessingFee.isChargeable()) {
+      log.info("actual cost is not supported now (test)");
+    }
+
+
     final Period periodShouldPassSinceOverdue = isRecalled
       ? recalledItemAgedToLostAfterOverdueInterval : itemAgedToLostAfterOverdueInterval;
 
