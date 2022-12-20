@@ -208,12 +208,14 @@ public class ItemsInTransitReport {
 
   private void writeCheckInServicePoint(JsonObject loanJson, ServicePoint servicePoint) {
     final JsonObject checkInServicePointJson = new JsonObject();
-    write(checkInServicePointJson, "name", servicePoint.getName());
-    write(checkInServicePointJson, "code", servicePoint.getCode());
-    write(checkInServicePointJson, "discoveryDisplayName", servicePoint.getDiscoveryDisplayName());
-    write(checkInServicePointJson, "description", servicePoint.getDescription());
-    write(checkInServicePointJson, "shelvingLagTime", servicePoint.getShelvingLagTime());
-    write(checkInServicePointJson, "pickupLocation", servicePoint.isPickupLocation());
+    if (servicePoint != null) {
+      write(checkInServicePointJson, "name", servicePoint.getName());
+      write(checkInServicePointJson, "code", servicePoint.getCode());
+      write(checkInServicePointJson, "discoveryDisplayName", servicePoint.getDiscoveryDisplayName());
+      write(checkInServicePointJson, "description", servicePoint.getDescription());
+      write(checkInServicePointJson, "shelvingLagTime", servicePoint.getShelvingLagTime());
+      write(checkInServicePointJson, "pickupLocation", servicePoint.isPickupLocation());
+    }
     write(loanJson, "checkInServicePoint", checkInServicePointJson);
   }
 }
