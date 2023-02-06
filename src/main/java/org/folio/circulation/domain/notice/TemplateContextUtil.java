@@ -274,14 +274,14 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan) {
-    System.out.println("Calling to get userpreferredfirstName  place 1 ");
+    System.out.println("Calling to get userpreferredfirstName  place 1  ");
     return createLoanNoticeContext(loan)
       .put(FEE_CHARGE, createFeeChargeContext(account));
   }
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan,
     FeeFineAction feeFineAction) {
-    System.out.println("Calling to get userpreferredfirstName  place 2 ");
+    System.out.println("Calling to get userpreferredfirstName  place 2  ");
     return createFeeFineNoticeContext(account, loan)
       .put(FEE_ACTION, createFeeActionContext(feeFineAction));
   }
