@@ -329,7 +329,22 @@ public class RequestByInstanceIdResource extends Resource {
             return placeRequest(itemRequests, startIndex +1,
               createRequestService, clients, errors, repositories);
           }
-        });
+        })
+      .whenComplete(this::handleResult);
+  }
+
+  private void handleResult(Result<RequestAndRelatedRecords> result, Throwable throwable) {
+    if (throwable != null) {
+      log.error("An exception was caught while placeRequest", throwable);
+    } else if (result != null) {
+      if (result.failed()) {
+        log.error("placeRequest creating failed: {}", result.cause());
+      } else {
+        log.info("Request created successfully");
+      }
+    } else {
+      log.error("placeRequest: Result and throwable are null");
+    }
   }
 
   public static Result<InstanceRequestRelatedRecords> rankItemsByMatchingServicePoint(

@@ -161,7 +161,22 @@ class RequestFromRepresentationService {
       .thenComposeAsync(r -> r.after(proxyRelationshipValidator::refuseWhenInvalid)
         .thenApply(res -> errorHandler.handleValidationResult(res, INVALID_PROXY_RELATIONSHIP, r)))
       .thenApply(r -> r.next(pickupLocationValidator::refuseInvalidPickupServicePoint)
-        .mapFailure(err -> errorHandler.handleValidationError(err, INVALID_PICKUP_SERVICE_POINT, r)));
+        .mapFailure(err -> errorHandler.handleValidationError(err, INVALID_PICKUP_SERVICE_POINT, r)))
+      .whenComplete(this::handleResult);
+  }
+
+  private void handleResult(Result<RequestAndRelatedRecords> result, Throwable throwable) {
+    if (throwable != null) {
+      log.error("An exception was caught while getRequestFrom", throwable);
+    } else if (result != null) {
+      if (result.failed()) {
+        log.error("getRequestFrom failed: {}", result.cause());
+      } else {
+        log.info("getRequestFrom executed successfully");
+      }
+    } else {
+      log.error("getRequestFrom: Result and throwable are null");
+    }
   }
 
   private CompletableFuture<Result<Request>> initRequest(Request.Operation operation,

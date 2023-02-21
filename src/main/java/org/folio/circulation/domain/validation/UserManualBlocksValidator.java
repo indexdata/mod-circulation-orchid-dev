@@ -8,12 +8,15 @@ import static org.folio.circulation.support.results.Result.ofAsync;
 import static org.folio.circulation.support.utils.ClockUtil.getZonedDateTime;
 import static org.folio.circulation.support.utils.DateTimeUtil.isAfterMillis;
 
+import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.LoanAndRelatedRecords;
 import org.folio.circulation.domain.MultipleRecords;
 import org.folio.circulation.domain.Request;
@@ -28,6 +31,7 @@ import org.folio.circulation.support.results.Result;
 
 public class UserManualBlocksValidator {
   private final FindWithCqlQuery<UserManualBlock> userManualBlocksFetcher;
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public UserManualBlocksValidator(FindWithCqlQuery<UserManualBlock> userManualBlocksFetcher) {
     this.userManualBlocksFetcher = userManualBlocksFetcher;
@@ -41,6 +45,7 @@ public class UserManualBlocksValidator {
   public CompletableFuture<Result<RequestAndRelatedRecords>> refuseWhenUserIsBlocked(
     RequestAndRelatedRecords requestAndRelatedRecords) {
 
+    log.info("refuseWhenUserIsBlocked...");
     return Optional.ofNullable(requestAndRelatedRecords.getRequest())
       .map(Request::getRequester)
       .map(user -> failIfPatronIsBlocked(userManualBlock -> isBlockedAction(

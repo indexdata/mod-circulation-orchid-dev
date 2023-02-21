@@ -74,6 +74,7 @@ public class CreateRequestService {
   public CompletableFuture<Result<RequestAndRelatedRecords>> createRequest(
     RequestAndRelatedRecords requestAndRelatedRecords) {
 
+    log.info("create request...");
     final var requestRepository = repositories.getRequestRepository();
     final var configurationRepository = repositories.getConfigurationRepository();
     final var automatedBlocksValidator = requestBlockValidators.getAutomatedPatronBlocksValidator();
@@ -105,7 +106,22 @@ public class CreateRequestService {
       .thenApplyAsync(r -> {
         r.after(t -> eventPublisher.publishLogRecord(mapToRequestLogEventJson(t.getRequest()), getLogEventType()));
         return r.next(requestNoticeSender::sendNoticeOnRequestCreated);
-      });
+      })
+      .whenComplete(this::handleResult);
+  }
+
+  private void handleResult(Result<RequestAndRelatedRecords> result, Throwable throwable) {
+    if (throwable != null) {
+      log.error("An exception was caught while createRequest", throwable);
+    } else if (result != null) {
+      if (result.failed()) {
+        log.error("createRequest failed: {}", result.cause());
+      } else {
+        log.info("createRequest executed successfully");
+      }
+    } else {
+      log.error("createRequest: Result and throwable are null");
+    }
   }
 
   private Result<RequestAndRelatedRecords> refuseHoldOrRecallTlrWhenPageableItemExists(
@@ -197,9 +213,10 @@ public class CreateRequestService {
   private CompletableFuture<Result<RequestAndRelatedRecords>> checkPolicy(
     RequestAndRelatedRecords records) {
 
+    log.info("checkPolicy...");
     if (errorHandler.hasAny(INVALID_ITEM_ID, ITEM_DOES_NOT_EXIST, INVALID_USER_OR_PATRON_GROUP_ID,
       TLR_RECALL_WITHOUT_OPEN_LOAN_OR_RECALLABLE_ITEM)) {
-
+      log.info("checkPolicy item already has an error");
       return ofAsync(() -> records);
     }
 
@@ -209,6 +226,7 @@ public class CreateRequestService {
     if (tlrFeatureEnabled && records.getRequest().getRequestLevel() == TITLE
       && records.getRequest().isHold()) {
 
+      log.info("checkPolicy... TLR enabled");
       return ofAsync(() -> records);
     }
 

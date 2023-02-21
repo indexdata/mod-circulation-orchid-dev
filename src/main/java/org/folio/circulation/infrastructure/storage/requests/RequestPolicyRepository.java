@@ -55,6 +55,7 @@ public class RequestPolicyRepository {
   }
 
   private CompletableFuture<Result<RequestPolicy>> lookupRequestPolicy(Item item, User user) {
+    log.info("lookupRequestPolicy... ");
     return lookupRequestPolicyId(item, user)
       .thenComposeAsync(r -> r.after(this::lookupRequestPolicy))
       .thenApply(result -> result.map(RequestPolicy::from));
@@ -64,8 +65,11 @@ public class RequestPolicyRepository {
     String requestPolicyId) {
 
     return SingleRecordFetcher.json(requestPoliciesStorageClient, "request policy",
-      response -> failedDueToServerError(format(
-        "Request policy %s could not be found, please check circulation rules", requestPolicyId)))
+      response -> {
+      log.info("Request policy {} could not be found, please check circulation rules", requestPolicyId);
+      return failedDueToServerError(format(
+          "Request policy %s could not be found, please check circulation rules", requestPolicyId));
+      })
       .fetch(requestPolicyId);
   }
 

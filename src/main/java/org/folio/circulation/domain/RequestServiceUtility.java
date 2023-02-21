@@ -6,11 +6,14 @@ import static org.folio.circulation.support.ValidationErrorFailure.failedValidat
 import static org.folio.circulation.support.results.Result.of;
 import static org.folio.circulation.support.results.Result.succeeded;
 
+import java.lang.invoke.MethodHandles;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Request.Operation;
 import org.folio.circulation.domain.policy.RequestPolicy;
 import org.folio.circulation.support.http.server.ValidationError;
@@ -21,6 +24,7 @@ public class RequestServiceUtility {
   private static final String ITEM_ID = "itemId";
   private static final String REQUESTER_ID = "requesterId";
   private static final String REQUEST_ID = "requestId";
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private RequestServiceUtility() { }
 
@@ -49,12 +53,15 @@ public class RequestServiceUtility {
   static Result<RequestAndRelatedRecords> refuseWhenRequestCannotBeFulfilled(
     RequestAndRelatedRecords requestAndRelatedRecords) {
 
+    log.info("refuseWhenRequestCannotBeFulfilled...");
     RequestPolicy requestPolicy = requestAndRelatedRecords.getRequestPolicy();
     RequestType requestType = requestAndRelatedRecords.getRequest().getRequestType();
 
     if (!requestPolicy.allowsType(requestType)) {
+      log.info("request policy does not allow the requestType {}", requestType);
       return failureDisallowedForRequestType(requestType);
     } else {
+      log.info("refuseWhenRequestCannotBeFulfilled... succeeded");
       return succeeded(requestAndRelatedRecords);
     }
   }
@@ -84,15 +91,19 @@ public class RequestServiceUtility {
   static Result<RequestAndRelatedRecords> refuseWhenInvalidUserAndPatronGroup(
     RequestAndRelatedRecords requestAndRelatedRecords) {
 
+    log.info("refuseWhenInvalidUserAndPatronGroup...");
     Request request = requestAndRelatedRecords.getRequest();
     User requester = request.getRequester();
 
     if (requester == null) {
+      log.info("A valid user and patron group are required. User is null");
       return failedValidation("A valid user and patron group are required. User is null", "userId",
         request.getUserId());
     } else if (requester.getPatronGroupId() == null) {
+      log.info("requester.getPatronGroupId() is null");
       return failedValidation("A valid patron group is required. PatronGroup ID is null", "PatronGroupId", null);
     } else {
+      log.info("refuseWhenInvalidUserAndPatronGroup succeeded");
       return succeeded(requestAndRelatedRecords);
     }
   }
@@ -100,6 +111,7 @@ public class RequestServiceUtility {
   static Result<RequestAndRelatedRecords> refuseWhenUserIsInactive(
     RequestAndRelatedRecords requestAndRelatedRecords) {
 
+    log.info("refuseWhenUserIsInactive...");
     Request request = requestAndRelatedRecords.getRequest();
     User requester = request.getRequester();
 
@@ -110,9 +122,10 @@ public class RequestServiceUtility {
       parameters.put(ITEM_ID, request.getItemId());
 
       String message = "Inactive users cannot make requests";
-
+      log.info("Inactive users cannot make requests");
       return failedValidation(new ValidationError(message, parameters));
     } else {
+      log.info("refuseWhenUserIsInactive succeeded");
       return of(() -> requestAndRelatedRecords);
     }
   }
@@ -163,6 +176,7 @@ public class RequestServiceUtility {
   static Result<RequestAndRelatedRecords> refuseWhenAlreadyRequested(
     RequestAndRelatedRecords requestAndRelatedRecords) {
 
+    log.info("refuseWhenAlreadyRequested...");
     return requestAndRelatedRecords.getRequestQueue().getRequests().stream()
       .filter(isAlreadyRequested(requestAndRelatedRecords))
       .findFirst()
@@ -196,6 +210,7 @@ public class RequestServiceUtility {
   private static Result<RequestAndRelatedRecords> alreadyRequestedFailure(
     RequestAndRelatedRecords requestAndRelatedRecords, Request existingRequest) {
 
+    log.info("alreadyRequestedFailure...");
     Request requestBeingPlaced = requestAndRelatedRecords.getRequest();
     HashMap<String, String> parameters = new HashMap<>();
     String message;
@@ -208,11 +223,13 @@ public class RequestServiceUtility {
         message = requestBeingPlaced.getOperation() == Operation.MOVE
           ? "Not allowed to move TLR to the same item"
           : "This requester already has an open request for this instance";
+        log.info(message);
       } else {
         parameters.put(REQUESTER_ID, requestBeingPlaced.getUserId());
         parameters.put(INSTANCE_ID, requestBeingPlaced.getInstanceId());
 
         message = "This requester already has an open request for one of the instance's items";
+        log.info(message);
       }
     } else {
       parameters.put(REQUESTER_ID, requestBeingPlaced.getUserId());
@@ -220,8 +237,10 @@ public class RequestServiceUtility {
       parameters.put(REQUEST_ID, requestBeingPlaced.getId());
 
       message = "This requester already has an open request for this item";
+      log.info(message);
     }
 
+    log.info("alreadyRequestedFailure failed");
     return failedValidation(message, parameters);
   }
 

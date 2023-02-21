@@ -4,6 +4,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.circulation.support.results.Result.ofAsync;
 import static org.folio.circulation.support.results.Result.succeeded;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.AutomatedPatronBlock;
 import org.folio.circulation.domain.AutomatedPatronBlocks;
 import org.folio.circulation.infrastructure.storage.AutomatedPatronBlocksRepository;
@@ -26,6 +29,7 @@ import org.folio.circulation.support.ValidationErrorFailure;
 public class AutomatedPatronBlocksValidator {
   private final AutomatedPatronBlocksRepository automatedPatronBlocksRepository;
   private final Function<List<String>, ValidationErrorFailure> actionIsBlockedForPatronErrorFunction;
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public AutomatedPatronBlocksValidator(
     AutomatedPatronBlocksRepository automatedPatronBlocksRepository,
@@ -61,7 +65,7 @@ public class AutomatedPatronBlocksValidator {
 
   public CompletableFuture<Result<RequestAndRelatedRecords>>
   refuseWhenRequestActionIsBlockedForPatron(RequestAndRelatedRecords requestAndRelatedRecords) {
-
+    log.info("refuseWhenRequestActionIsBlockedForPatron...");
     return refuse(requestAndRelatedRecords.getUserId(), AutomatedPatronBlock::isBlockRequest,
       requestAndRelatedRecords);
   }
@@ -69,6 +73,7 @@ public class AutomatedPatronBlocksValidator {
   private <T> CompletableFuture<Result<T>> refuse(String userId,
     Predicate<AutomatedPatronBlock> actionPredicate, T mapTo) {
 
+    log.info("refuse...");
     return ofAsync(() -> userId)
       .thenComposeAsync(r -> r.after(automatedPatronBlocksRepository::findByUserId))
       .thenComposeAsync(r -> r.after(blocks -> getActionBlock(blocks, actionPredicate)))

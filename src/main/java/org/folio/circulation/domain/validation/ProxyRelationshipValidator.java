@@ -6,10 +6,13 @@ import static org.folio.circulation.support.http.client.CqlQuery.exactMatch;
 import static org.folio.circulation.support.results.Result.failed;
 import static org.folio.circulation.support.results.Result.succeeded;
 
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.MultipleRecords;
 import org.folio.circulation.domain.ProxyRelationship;
 import org.folio.circulation.domain.UserRelatedRecord;
@@ -23,6 +26,7 @@ import org.folio.circulation.support.results.Result;
 public class ProxyRelationshipValidator {
   private final GetManyRecordsClient proxyRelationshipsClient;
   private final Supplier<ValidationErrorFailure> invalidRelationshipErrorSupplier;
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public ProxyRelationshipValidator(
     Clients clients,
@@ -37,10 +41,13 @@ public class ProxyRelationshipValidator {
 
     //No need to validate as not proxied activity
     if (userRelatedRecord.getProxyUserId() == null) {
+      log.info("userRelatedRecord.getProxyUserId() is null");
       return completedFuture(succeeded(userRelatedRecord));
     }
 
     if (StringUtils.equals(userRelatedRecord.getProxyUserId(), userRelatedRecord.getUserId())) {
+      log.info("userRelatedRecord.getProxyUserId() equals userRelatedRecord.getUserId()");
+
       return completedFuture(failed(singleValidationError(
         "User cannot be proxy for themself", "proxyUserId",
         userRelatedRecord.getProxyUserId())));
