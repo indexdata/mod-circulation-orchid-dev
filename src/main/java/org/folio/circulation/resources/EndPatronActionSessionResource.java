@@ -4,6 +4,8 @@ import static org.folio.circulation.support.http.server.NoContentResponse.noCont
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.notice.session.PatronActionSessionService;
 import org.folio.circulation.domain.representations.EndPatronSessionRequest;
 import org.folio.circulation.infrastructure.storage.inventory.ItemRepository;
@@ -21,6 +23,8 @@ import io.vertx.ext.web.RoutingContext;
 
 public class EndPatronActionSessionResource extends Resource {
 
+  private static final Logger log = LogManager.getLogger(EndPatronActionSessionResource.class);
+
   public EndPatronActionSessionResource(HttpClient client) {
     super(client);
   }
@@ -33,6 +37,7 @@ public class EndPatronActionSessionResource extends Resource {
   }
 
   private void process(RoutingContext routingContext) {
+    log.info("Inside EndPatronActionSessionResource");
     WebContext context = new WebContext(routingContext);
     Clients clients = Clients.create(context, client);
 

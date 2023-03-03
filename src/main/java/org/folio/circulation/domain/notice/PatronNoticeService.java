@@ -4,6 +4,9 @@ import static org.folio.HttpStatus.HTTP_OK;
 
 import io.vertx.core.json.JsonObject;
 import java.util.concurrent.CompletableFuture;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.representations.logs.NoticeLogContext;
 import org.folio.circulation.services.EventPublisher;
 import org.folio.circulation.support.Clients;
@@ -18,6 +21,8 @@ public abstract class PatronNoticeService {
   private final CollectionResourceClient patronNoticeClient;
   private final EventPublisher eventPublisher;
 
+  private static final Logger log = LogManager.getLogger(PatronNoticeService.class);
+
   protected PatronNoticeService(Clients clients) {
     this.patronNoticeClient = clients.patronNoticeClient();
     this.eventPublisher = new EventPublisher(clients.pubSubPublishingService());
@@ -25,7 +30,7 @@ public abstract class PatronNoticeService {
 
   public CompletableFuture<Result<Void>> sendNotice(PatronNotice patronNotice,
     NoticeLogContext noticeLogContext) {
-
+    log.info("Inside send notice  with patron Notice {} , notice logContext {}",patronNotice,noticeLogContext);
     return patronNoticeClient.post(JsonObject.mapFrom(patronNotice))
       .thenApply(r ->  new ResponseInterpreter<Response>().on(200, r).flatMap(r))
       .whenComplete((r, t) -> logResult(patronNotice, noticeLogContext, r, t))

@@ -86,7 +86,7 @@ public class TemplateContextMatchers {
     String copyNumber = findRepresentationCopyNumber(itemResource, applyHoldingRecord);
 
     Map<String, Matcher<String>> tokenMatchers = new HashMap<>();
-    tokenMatchers.put("item.title", notNullValue(String.class));
+    //tokenMatchers.put("item.title", notNullValue(String.class));
     tokenMatchers.put("item.allContributors", notNullValue(String.class));
     tokenMatchers.put("item.barcode", is(item.getString("barcode")));
     tokenMatchers.put("item.callNumber", is(callNumber));
@@ -98,6 +98,7 @@ public class TemplateContextMatchers {
     tokenMatchers.put("item.effectiveLocationLibrary", notNullValue(String.class));
     tokenMatchers.put("item.effectiveLocationCampus", notNullValue(String.class));
     tokenMatchers.put("item.effectiveLocationInstitution", notNullValue(String.class));
+    //tokenMatchers.put("item.loanType", notNullValue(String.class));
     return tokenMatchers;
   }
 

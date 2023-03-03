@@ -92,6 +92,7 @@ public class RequestNoticeSender {
   private final EventPublisher eventPublisher;
   protected final LocationRepository locationRepository;
 
+
   public Result<RequestAndRelatedRecords> sendNoticeOnRequestCreated(
     RequestAndRelatedRecords records) {
 
@@ -212,7 +213,7 @@ public class RequestNoticeSender {
 
   private CompletableFuture<Result<Void>> sendNoticeForRequestWithoutItemId(Request request,
     NoticeEventType eventType, Function<TlrSettingsConfiguration, UUID> templateIdExtractor) {
-
+    log.info("Inside send notice sendNoticeForRequestWithoutItemId ");
     TlrSettingsConfiguration tlrSettings = request.getTlrSettingsConfiguration();
     UUID templateId = templateIdExtractor.apply(tlrSettings);
 
@@ -225,13 +226,14 @@ public class RequestNoticeSender {
 
   private CompletableFuture<Result<Void>> sendNotice(Request request, UUID templateId,
     NoticeEventType eventType) {
+    log.info("Inside Request notice service with request {}",request);
 
     JsonObject noticeContext = createRequestNoticeContext(request);
     NoticeLogContext noticeLogContext = NoticeLogContext.from(request)
       .withTriggeringEvent(eventType.getRepresentation())
       .withTemplateId(templateId.toString());
     PatronNotice notice = buildEmail(request.getUserId(), templateId, noticeContext);
-
+  log.info("After build email in request notice sender with type patron notice {}",notice);
     return patronNoticeService.sendNotice(notice, noticeLogContext);
   }
 

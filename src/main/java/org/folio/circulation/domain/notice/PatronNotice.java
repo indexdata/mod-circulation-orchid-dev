@@ -40,11 +40,22 @@ public class PatronNotice {
     return new PatronNotice(recipientId, context, templateId, EMAIL);
   }
 
+//  @Override
+//  public String toString() {
+//    return "PatronNotice{" +
+//      "recipientId='" + recipientId + '\'' +
+//      ", templateId='" + templateId + '\'' +
+//      '}';
+//  }
+
   @Override
   public String toString() {
     return "PatronNotice{" +
       "recipientId='" + recipientId + '\'' +
       ", templateId='" + templateId + '\'' +
+      ", deliveryChannel='" + deliveryChannel + '\'' +
+      ", outputFormat='" + outputFormat + '\'' +
+      ", context=" + context +
       '}';
   }
 }

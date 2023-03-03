@@ -2,6 +2,8 @@ package org.folio.circulation.support;
 
 import java.net.MalformedURLException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.rules.CirculationRulesProcessor;
 import org.folio.circulation.services.PubSubPublishingService;
 import org.folio.circulation.support.http.client.OkapiHttpClient;
@@ -64,6 +66,8 @@ public class Clients {
   private final CollectionResourceClient accountsCancelClient;
   private final CollectionResourceClient actualCostRecordsStorageClient;
   private final CollectionResourceClient actualCostFeeFineCancelClient;
+
+  private static final Logger log = LogManager.getLogger(Clients.class);
 
   public static Clients create(WebContext context, HttpClient httpClient) {
     return new Clients(context.createHttpClient(httpClient), context);
@@ -613,7 +617,7 @@ public class Clients {
   private CollectionResourceClient createPatronNoticeClient(
     OkapiHttpClient client, WebContext context)
     throws MalformedURLException {
-
+    log.info("Inside createPatronNoticeClient with context {}",context);
     return getCollectionResourceClient(client, context, "/patron-notice");
   }
 

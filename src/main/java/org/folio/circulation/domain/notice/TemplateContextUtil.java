@@ -5,11 +5,14 @@ import static java.util.stream.Collectors.joining;
 import static org.folio.circulation.support.json.JsonPropertyWriter.write;
 import static org.folio.circulation.support.utils.DateFormatUtil.formatDateTime;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Account;
 import org.folio.circulation.domain.CallNumberComponents;
 import org.folio.circulation.domain.CheckInContext;
@@ -40,10 +43,13 @@ public class TemplateContextUtil {
 
   private static final String UNLIMITED = "unlimited";
 
+  private static final Logger log = LogManager.getLogger(TemplateContextUtil.class);
+
   private TemplateContextUtil() {
   }
 
   public static JsonObject createLoanNoticeContextWithoutUser(Loan loan) {
+    log.info("Inside createLoanNoticeContextWithoutUser {} ",loan);
     return new JsonObject()
       .put(ITEM, createItemContext(loan.getItem()))
       .put(LOAN, createLoanContext(loan));
@@ -58,6 +64,7 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createLoanNoticeContext(Loan loan) {
+    log.info("Inside create request on createLoanNoticeContext  {}" , loan);
     return new JsonObject()
       .put(USER, createUserContext(loan.getUser()))
       .put(ITEM, createItemContext(loan.getItem()))
@@ -65,6 +72,7 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createRequestNoticeContext(Request request) {
+    log.info("Inside create request on create request notice context  {}" , request);
     JsonObject requestNoticeContext = new JsonObject()
       .put(USER, createUserContext(request.getRequester()))
       .put(REQUEST, createRequestContext(request))
@@ -156,6 +164,8 @@ public class TemplateContextUtil {
   }
 
   private static JsonObject createItemContext(Item item) {
+    log.info("Inside createItemContext with item {} ",item);
+    log.info("Item values {} {} ",item.getBarcode(),item.getLoanTypeName());
     String yearCaptionsToken = String.join("; ", item.getYearCaption());
     String copyNumber = item.getCopyNumber() != null ? item.getCopyNumber() : "";
 

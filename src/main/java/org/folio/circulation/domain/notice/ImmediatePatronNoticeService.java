@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.notice.combiner.NoticeContextCombiner;
 import org.folio.circulation.domain.representations.logs.NoticeLogContext;
 import org.folio.circulation.infrastructure.storage.notices.PatronNoticePolicyRepository;
@@ -32,6 +34,8 @@ public class ImmediatePatronNoticeService extends PatronNoticeService {
 
   private final PatronNoticePolicyRepository noticePolicyRepository;
   private final NoticeContextCombiner noticeContextCombiner;
+
+  private static final Logger log = LogManager.getLogger(ImmediatePatronNoticeService.class);
 
   public ImmediatePatronNoticeService(Clients clients, NoticeContextCombiner noticeContextCombiner) {
     super(clients);
@@ -86,6 +90,7 @@ public class ImmediatePatronNoticeService extends PatronNoticeService {
   }
 
   private CompletableFuture<Result<Void>> applyPatronNoticePolicy(EventGroupContext context) {
+    log.info("Inside applyPatronNoticePolicy");
     return findMatchingNoticeConfiguration(context)
       .map(context::withNoticeConfig)
       .map(this::updateNoticeLogContext)
@@ -107,6 +112,7 @@ public class ImmediatePatronNoticeService extends PatronNoticeService {
   }
 
   private CompletableFuture<Result<Void>> sendNotice(EventGroupContext context) {
+    log.info("Inside Immediate patron notice service with event group context{}",context);
     PatronNotice patronNotice = new PatronNotice(
       context.getGroupDefinition().getRecipientId(),
       context.getCombinedNoticeContext(),

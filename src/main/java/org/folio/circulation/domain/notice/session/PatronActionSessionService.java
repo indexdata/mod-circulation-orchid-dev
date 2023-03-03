@@ -177,7 +177,7 @@ public class PatronActionSessionService {
   // all sessions must be for the same patron
   private CompletableFuture<Result<List<PatronSessionRecord>>> sendNotice(
     List<PatronSessionRecord> sessions) {
-
+    log.info("Inside send Notice with session {}",sessions);
     if (sessions.isEmpty()) {
       log.info("No patron action sessions to process");
       return ofAsync(() -> null);
@@ -222,6 +222,8 @@ public class PatronActionSessionService {
   }
 
   private static PatronNoticeEvent buildPatronNoticeEvent(PatronSessionRecord session) {
+    log.info("Inside buildPatronNoticeEvent with session {}",session);
+    log.info("Inside buildPatronNoticeEvent with loan {}",session.getLoan());
     Loan loan = session.getLoan();
 
     return new PatronNoticeEventBuilder()

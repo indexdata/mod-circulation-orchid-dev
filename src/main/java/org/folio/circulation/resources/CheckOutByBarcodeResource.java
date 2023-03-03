@@ -16,6 +16,8 @@ import static org.folio.circulation.support.results.Result.succeeded;
 import java.time.ZonedDateTime;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Loan;
 import org.folio.circulation.domain.LoanAndRelatedRecords;
 import org.folio.circulation.domain.LoanRepresentation;
@@ -61,6 +63,8 @@ import io.vertx.ext.web.RoutingContext;
 public class CheckOutByBarcodeResource extends Resource {
 
   private final String rootPath;
+  private static final Logger log = LogManager.getLogger(CheckOutByBarcodeResource.class);
+
   private static final CirculationErrorType[] PARTIAL_SUCCESS_ERRORS = {
     FAILED_TO_SAVE_SESSION_RECORD, FAILED_TO_PUBLISH_CHECKOUT_EVENT};
 
@@ -82,7 +86,7 @@ public class CheckOutByBarcodeResource extends Resource {
 
     CheckOutByBarcodeRequest request = CheckOutByBarcodeRequest.fromJson(
       routingContext.getBodyAsJson());
-
+  log.info("Inside checkout with request {}",request);
     final Clients clients = Clients.create(context, client);
 
     final var userRepository = new UserRepository(clients);
