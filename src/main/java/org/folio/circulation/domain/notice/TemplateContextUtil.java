@@ -60,8 +60,7 @@ public class TemplateContextUtil {
     log.info("Inside createMultiLoanNoticeContext {}",item);
     return new JsonObject()
       .put(USER, createUserContext(user))
-      .put(LOANS, new JsonArray(new ArrayList<>(loanContexts)))
-      .put(ITEM, createItemContext(item));
+      .put(LOANS, new JsonArray(new ArrayList<>(loanContexts)));
   }
 
   public static JsonObject createLoanNoticeContext(Loan loan) {

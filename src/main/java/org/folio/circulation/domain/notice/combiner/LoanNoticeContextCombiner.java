@@ -1,7 +1,6 @@
 package org.folio.circulation.domain.notice.combiner;
 
 import static java.util.stream.Collectors.collectingAndThen;
-import static org.folio.circulation.domain.notice.TemplateContextUtil.createItemContext;
 import static org.folio.circulation.domain.notice.TemplateContextUtil.createUserContext;
 
 import java.util.Collection;
@@ -31,7 +30,7 @@ public class LoanNoticeContextCombiner implements NoticeContextCombiner {
         contexts -> new JsonObject()
           .put("user", createUserContext(events.iterator().next().getUser()))
           .put("loans", contexts)
-          .put("item",createItemContext(events.iterator().next().getItem()))
+          .put("item.loanType",events.iterator().next().getItem().getLoanTypeName())
       ));
   }
 
