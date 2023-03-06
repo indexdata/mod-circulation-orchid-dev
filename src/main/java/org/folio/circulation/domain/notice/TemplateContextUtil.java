@@ -37,7 +37,7 @@ public class TemplateContextUtil {
   private static final String REQUEST = "request";
   private static final String REQUESTER = "requester";
   private static final String LOAN = "loan";
-  private static final String LOANS = "loans";
+  private static final String LOANS = "loans1";
   private static final String FEE_CHARGE = "feeCharge";
   private static final String FEE_ACTION = "feeAction";
 
@@ -49,7 +49,7 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createLoanNoticeContextWithoutUser(Loan loan) {
-    log.info("Inside createLoanNoticeContextWithoutUser {} ",loan);
+    log.info("Inside createLoanNoticeContext Without User {} ",loan);
     return new JsonObject()
       .put(ITEM, createItemContext(loan.getItem()))
       .put(LOAN, createLoanContext(loan));

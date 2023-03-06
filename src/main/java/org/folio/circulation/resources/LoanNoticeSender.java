@@ -107,6 +107,7 @@ public class LoanNoticeSender {
 
 
   private CompletableFuture<Result<Void>> sendNotice(Loan loan, NoticeEventType eventType) {
+    log.info("Inside send notice of loan notice sender");
     PatronNoticeEvent noticeEvent = new PatronNoticeEventBuilder()
       .withItem(loan.getItem())
       .withUser(loan.getUser())

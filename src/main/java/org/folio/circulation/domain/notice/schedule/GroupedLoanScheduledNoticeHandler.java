@@ -56,7 +56,7 @@ public class GroupedLoanScheduledNoticeHandler {
 
   private CompletableFuture<Result<List<ScheduledNotice>>> handleNoticeGroup(
     List<ScheduledNotice> notices) {
-
+    log.info("Inside handle notice group");
     //TODO: user and template are the same for all notices in the group, so they can be fetched only once
     return allResultsOf(notices, this::buildContext)
       .thenCompose(this::discardContextBuildingFailures)
@@ -76,6 +76,7 @@ public class GroupedLoanScheduledNoticeHandler {
   }
 
   private static ScheduledNoticeContext buildLoanNoticeContext(ScheduledNoticeContext context) {
+    log.info("Inside buildLoanNoticeContext {}",context);
     return context.withLoanNoticeContext(createLoanNoticeContextWithoutUser(context.getLoan()));
   }
 
@@ -118,7 +119,7 @@ public class GroupedLoanScheduledNoticeHandler {
 
   private CompletableFuture<Result<List<ScheduledNoticeContext>>> sendGroupedNotice(
     List<ScheduledNoticeContext> contexts) {
-
+    log.info("Inside sendGroupedNotice with contexts {}",contexts);
     if (contexts.isEmpty()) {
       log.warn("No notices left in the group to process, skipping the group");
       return completedFuture(succeeded(contexts));

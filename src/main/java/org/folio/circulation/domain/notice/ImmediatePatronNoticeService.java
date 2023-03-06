@@ -48,6 +48,7 @@ public class ImmediatePatronNoticeService extends PatronNoticeService {
   }
 
   public CompletableFuture<Result<Void>> acceptNoticeEvents(Collection<PatronNoticeEvent> events) {
+    log.info("Inside acceptNoticeEvents {}",events);
     return allOf(events, this::fetchNoticePolicyId)
       .thenApply(mapResult(this::groupEvents))
       .thenCompose(r -> r.after(this::handleEventGroups));
@@ -76,6 +77,7 @@ public class ImmediatePatronNoticeService extends PatronNoticeService {
   }
 
   private CompletableFuture<Result<Void>> handleEventGroup(EventGroupContext context) {
+    log.info("Inside patron notice handle Event group {}",context);
     return ofAsync(() -> context)
       .thenCompose(r -> r.after(this::fetchPatronNoticePolicy))
       .thenCompose(r -> r.after(this::applyPatronNoticePolicy));
@@ -112,7 +114,7 @@ public class ImmediatePatronNoticeService extends PatronNoticeService {
   }
 
   private CompletableFuture<Result<Void>> sendNotice(EventGroupContext context) {
-    log.info("Inside Immediate patron notice service with event group context{}",context);
+    log.info("Inside Immediate patron notice service with event group context{}",context.getCombinedNoticeContext());
     PatronNotice patronNotice = new PatronNotice(
       context.getGroupDefinition().getRecipientId(),
       context.getCombinedNoticeContext(),
@@ -140,6 +142,7 @@ public class ImmediatePatronNoticeService extends PatronNoticeService {
     }
 
     public EventGroupContext combineContexts(NoticeContextCombiner contextCombiner) {
+      log.info("Inside combineContexts {} ",contextCombiner);
       return withCombinedNoticeContext(contextCombiner.buildCombinedNoticeContext(events))
         .withCombinedNoticeLogContext(contextCombiner.buildCombinedNoticeLogContext(events));
     }
