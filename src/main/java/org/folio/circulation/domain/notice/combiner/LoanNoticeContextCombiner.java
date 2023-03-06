@@ -30,7 +30,7 @@ public class LoanNoticeContextCombiner implements NoticeContextCombiner {
         contexts -> new JsonObject()
           .put("user", createUserContext(events.iterator().next().getUser()))
           .put("loans", contexts)
-          .put("item.loanType",events.iterator().next().getItem().getLoanTypeName())
+          .put("item",new JsonObject().put("loanType",events.iterator().next().getItem().getLoanTypeName()))
       ));
   }
 
