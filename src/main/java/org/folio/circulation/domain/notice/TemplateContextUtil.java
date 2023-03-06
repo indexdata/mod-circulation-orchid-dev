@@ -56,11 +56,12 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createMultiLoanNoticeContext(User user,
-    Collection<JsonObject> loanContexts) {
-
+    Collection<JsonObject> loanContexts, Item item) {
+    log.info("Inside createMultiLoanNoticeContext {}",item);
     return new JsonObject()
       .put(USER, createUserContext(user))
-      .put(LOANS, new JsonArray(new ArrayList<>(loanContexts)));
+      .put(LOANS, new JsonArray(new ArrayList<>(loanContexts)))
+      .put(ITEM, createItemContext(item));
   }
 
   public static JsonObject createLoanNoticeContext(Loan loan) {

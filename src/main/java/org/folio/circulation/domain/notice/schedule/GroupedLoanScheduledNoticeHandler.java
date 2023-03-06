@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.circulation.domain.Item;
 import org.folio.circulation.domain.User;
 import org.folio.circulation.domain.notice.ScheduledPatronNoticeService;
 import org.folio.circulation.domain.representations.logs.NoticeLogContext;
@@ -135,6 +136,7 @@ public class GroupedLoanScheduledNoticeHandler {
     //All the notices have the same properties so we can get any of them
     ScheduledNoticeContext contextSample = relevantContexts.get(0);
     User user = contextSample.getLoan().getUser();
+    Item item = contextSample.getLoan().getItem();
 
     List<JsonObject> noticeLoanContexts = relevantContexts.stream()
       .map(ScheduledNoticeContext::getLoanNoticeContext)
@@ -145,7 +147,7 @@ public class GroupedLoanScheduledNoticeHandler {
     return patronNoticeService.sendNotice(
         contextSample.getNotice().getConfiguration(),
         user.getId(),
-        createMultiLoanNoticeContext(user, noticeLoanContexts),
+        createMultiLoanNoticeContext(user, noticeLoanContexts, item),
         buildNoticeLogContext(relevantContexts, user))
       .thenApply(mapResult(v -> contexts));
   }
