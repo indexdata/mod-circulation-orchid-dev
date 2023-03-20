@@ -121,7 +121,7 @@ public class LocationRepository {
 
   public CompletableFuture<Result<MultipleRecords<Location>>> fetchLocations(
     Set<String> locationIds) {
-
+    log.info("Inside fetch locations with locationIds {},locationsStorageClient {}",locationIds,locationsStorageClient);
     final FindWithMultipleCqlIndexValues<Location> fetcher
       = findWithMultipleCqlIndexValues(locationsStorageClient, "locations",
       new LocationMapper()::toDomain);
@@ -165,7 +165,7 @@ public class LocationRepository {
 
   private CompletableFuture<Result<MultipleRecords<Location>>> loadLibrariesForLocations(
           Result<MultipleRecords<Location>> multipleRecordsResult) {
-
+    log.info("Inside loadLibrariesForLocations ");
     return multipleRecordsResult.combineAfter(
       locations -> getLibraries(locations.getRecords()), (locations, libraries) ->
         locations.mapRecords(location -> location.withLibrary(

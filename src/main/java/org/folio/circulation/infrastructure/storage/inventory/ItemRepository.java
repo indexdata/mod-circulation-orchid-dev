@@ -143,7 +143,7 @@ public class ItemRepository {
 
   private CompletableFuture<Result<MultipleRecords<Item>>> fetchLocations(
     Result<MultipleRecords<Item>> result) {
-
+    log.info("Inside fetchLocations with result {}",result);
     return result.combineAfter(this::fetchLocations,
       (items, locations) -> items
         .combineRecords(locations, matchRecordsById(Item::getPermanentLocationId, Location::getId),
@@ -311,7 +311,7 @@ public class ItemRepository {
 
   private CompletableFuture<Result<MultipleRecords<Item>>> fetchFor(
     Collection<String> itemIds) {
-
+    log.info("Inside fetchFor ItemIds");
     return fetchItems(itemIds)
       .thenComposeAsync(this::fetchItemsRelatedRecords);
   }
@@ -354,7 +354,7 @@ public class ItemRepository {
 
   public CompletableFuture<Result<MultipleRecords<Item>>> fetchItemsRelatedRecords(
     Result<MultipleRecords<Item>> items) {
-
+    log.info("Inside fetch Items Related Records with items {}",items);
     return fetchHoldingsRecords(items)
       .thenComposeAsync(this::fetchInstances)
       .thenComposeAsync(this::fetchLocations)

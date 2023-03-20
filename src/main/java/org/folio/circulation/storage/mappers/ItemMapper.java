@@ -4,8 +4,11 @@ import static org.apache.commons.lang3.StringUtils.firstNonBlank;
 import static org.folio.circulation.support.json.JsonPropertyFetcher.getProperty;
 import static org.folio.circulation.support.json.JsonStringArrayPropertyFetcher.toStream;
 
+import java.lang.invoke.MethodHandles;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.CallNumberComponents;
 import org.folio.circulation.domain.Holdings;
 import org.folio.circulation.domain.Instance;
@@ -20,7 +23,9 @@ import org.folio.circulation.domain.ServicePoint;
 import io.vertx.core.json.JsonObject;
 
 public class ItemMapper {
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   public Item toDomain(JsonObject representation) {
+    log.info("inside item mapper domain {}",representation);
     return new Item(getProperty(representation, "id"), representation,
       Location.unknown(getProperty(representation, "effectiveLocationId")),
       LastCheckIn.fromItemJson(representation),

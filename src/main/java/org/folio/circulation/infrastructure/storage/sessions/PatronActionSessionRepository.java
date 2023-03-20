@@ -234,7 +234,7 @@ public class PatronActionSessionRepository {
 
   private CompletableFuture<Result<MultipleRecords<PatronSessionRecord>>> findBy(
     CqlQuery query, PageLimit pageLimit) {
-
+    log.info("Inside findBy with query {} , pageLimit {}", query, pageLimit);
     return patronActionSessionsStorageClient.getMany(query, pageLimit)
       .thenApply(r -> r.next(response ->{
         log.info(" patronActionSessionsStorageClient response {}",response);
@@ -252,6 +252,7 @@ public class PatronActionSessionRepository {
       .map(PatronSessionRecord::getLoanId)
       .map(UUID::toString)
       .collect(Collectors.toList());
+    log.info("List of loanIds {}" , loanIds);
 
     return loanRepository.findByIds(loanIds)
       .thenCompose(r -> r.after(this::fetchCampusesForLoanItems))

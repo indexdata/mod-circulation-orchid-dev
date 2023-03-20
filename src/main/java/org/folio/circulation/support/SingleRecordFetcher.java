@@ -61,7 +61,7 @@ public class SingleRecordFetcher<T> {
 
   public CompletableFuture<Result<T>> fetch(String id) {
     if (log.isInfoEnabled()) {
-      log.info("Fetching {} with ID: {}", recordType, sanitizeLogParameter(id));
+      log.info("Fetching {} with ID: {} from resourceClient {}", recordType, sanitizeLogParameter(id), client);
     }
 
     requireNonNull(id, format("Cannot fetch single %s with null ID", recordType));
