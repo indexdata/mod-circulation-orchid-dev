@@ -317,6 +317,7 @@ public class ItemRepository {
   }
 
   public CompletableFuture<Result<Item>> fetchItemRelatedRecords(Result<Item> itemResult) {
+    log.info("Inside fetch Item Related Records with item {}",itemResult);
     return itemResult.combineAfter(this::fetchHoldingsRecord, Item::withHoldings)
       .thenComposeAsync(combineAfter(this::fetchInstance, Item::withInstance))
       .thenComposeAsync(combineAfter(locationRepository::getEffectiveLocation, Item::withLocation))

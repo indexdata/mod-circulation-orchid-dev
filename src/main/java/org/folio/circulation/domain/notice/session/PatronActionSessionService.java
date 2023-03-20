@@ -94,6 +94,7 @@ public class PatronActionSessionService {
   }
 
   public CompletableFuture<Result<Void>> endSessions(String patronId, PatronActionType actionType) {
+    log.info("Inside end session with patronId {} and actionType {} ", patronId, actionType);
     return safelyInitialise(() -> findSessions(patronId, actionType))
       .thenCompose(r -> r.after(this::processSessions))
       .thenApply(this::handleResult);
@@ -108,7 +109,7 @@ public class PatronActionSessionService {
 
   private CompletableFuture<Result<List<PatronSessionRecord>>> findSessions(String patronId,
     PatronActionType actionType) {
-
+    log.info("Inside findPatronActionSession ");
     return patronActionSessionRepository.findPatronActionSessions(patronId, actionType,
       DEFAULT_SESSION_SIZE_PAGE_LIMIT);
   }

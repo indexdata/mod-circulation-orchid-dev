@@ -18,12 +18,14 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import lombok.ToString;
 import org.folio.circulation.storage.mappers.ItemMapper;
 
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.NonNull;
 
+@ToString
 public class Item {
   private final String id;
   private final JsonObject itemRepresentation;

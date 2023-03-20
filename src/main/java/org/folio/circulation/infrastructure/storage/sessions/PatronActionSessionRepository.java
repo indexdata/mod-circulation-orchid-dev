@@ -141,12 +141,15 @@ public class PatronActionSessionRepository {
     String patronId, PatronActionType actionType, PageLimit pageLimit) {
 
     Result<CqlQuery> sessionsQuery = exactMatch(PATRON_ID, patronId);
-
+    log.info("Sessions Query1 {} ",sessionsQuery);
     sessionsQuery = addActionTypeToCqlQuery(sessionsQuery, actionType);
-
+    log.info("Sessions Query2 {} ",sessionsQuery);
     return sessionsQuery
       .after(query -> findBy(query, pageLimit))
-      .thenCompose(r -> r.combineAfter(() -> userRepository.getUser(patronId), this::setUserForLoans))
+      .thenCompose(r -> {
+        log.info("sessions query {} , after combine {} ",r,r.combineAfter(() -> userRepository.getUser(patronId), this::setUserForLoans));
+        return r.combineAfter(() -> userRepository.getUser(patronId), this::setUserForLoans);
+      })
       .thenApply(mapResult(this::toList));
   }
 
@@ -233,8 +236,11 @@ public class PatronActionSessionRepository {
     CqlQuery query, PageLimit pageLimit) {
 
     return patronActionSessionsStorageClient.getMany(query, pageLimit)
-      .thenApply(r -> r.next(response ->
-        MultipleRecords.from(response, identity(), PATRON_ACTION_SESSIONS)))
+      .thenApply(r -> r.next(response ->{
+        log.info(" patronActionSessionsStorageClient response {}",response);
+          return MultipleRecords.from(response, identity(), PATRON_ACTION_SESSIONS);
+        }
+        ))
       .thenApply(r -> r.next(records -> records.flatMapRecords(this::mapFromJson)))
       .thenCompose(r -> r.after(this::fetchLoans));
   }

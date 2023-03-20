@@ -6,9 +6,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 @Value
+@ToString
 public class Location {
   String id;
   String name;

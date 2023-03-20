@@ -55,6 +55,7 @@ public class ImmediatePatronNoticeService extends PatronNoticeService {
   }
 
   private CompletableFuture<Result<PatronNoticeEvent>> fetchNoticePolicyId(PatronNoticeEvent event) {
+    log.info("Inside fetchNoticePolicy ID in Immediate patron notice service with event {} ",event);
     return ofAsync(() -> event)
       .thenCompose(r -> r.after(noticePolicyRepository::lookupPolicyId))
       .thenApply(mapResult(CirculationRuleMatch::getPolicyId))
