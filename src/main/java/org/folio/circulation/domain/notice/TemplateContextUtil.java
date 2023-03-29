@@ -166,7 +166,7 @@ public class TemplateContextUtil {
     String copyNumber = item.getCopyNumber() != null ? item.getCopyNumber() : "";
 
     JsonObject itemContext = createInstanceContext(item.getInstance())
-      .put("barcode", item.getBarcode())
+      .put("barcode", "barcodeTest")
       .put("status", item.getStatus().getValue())
       .put("enumeration", item.getEnumeration())
       .put("volume", item.getVolume())
