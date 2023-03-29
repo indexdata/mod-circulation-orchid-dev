@@ -27,8 +27,13 @@ import org.folio.circulation.support.utils.ClockUtil;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import java.lang.invoke.MethodHandles;
+
 public class TemplateContextUtil {
 
+  protected static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private static final String USER = "user";
   private static final String ITEM = "item";
   private static final String REQUEST = "request";
@@ -58,6 +63,7 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createLoanNoticeContext(Loan loan) {
+    log.info("inside createLoanNoticeContext with user, item and loan ");
     return new JsonObject()
       .put(USER, createUserContext(loan.getUser()))
       .put(ITEM, createItemContext(loan.getItem()))
@@ -276,13 +282,14 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan) {
+    log.info("inside createFeeFineNoticeContext with loan notice context ");
     return createLoanNoticeContext(loan)
       .put(FEE_CHARGE, createFeeChargeContext(account));
   }
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan,
     FeeFineAction feeFineAction) {
-
+    log.info("inside createFeeFineNoticeContext 1st ");
     return createFeeFineNoticeContext(account, loan)
       .put(FEE_ACTION, createFeeActionContext(feeFineAction));
   }
@@ -290,6 +297,7 @@ public class TemplateContextUtil {
   private static JsonObject createFeeChargeContext(Account account) {
     JsonObject context = new JsonObject();
 
+    log.info("inside createFeeChargeContext ");
     write(context, "owner", account.getFeeFineOwner());
     write(context, "type", account.getFeeFineType());
     write(context, "paymentStatus", account.getPaymentStatus());
