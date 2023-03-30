@@ -301,6 +301,7 @@ public class TemplateContextUtil {
     write(context, "remainingAmount", account.getRemaining().toScaledString());
     write(context, "chargeDate", account.getCreationDate());
     write(context, "chargeDateTime", account.getCreationDate());
+    account.getFeeFineActions().stream().forEach(a->log.info("createFeeChargeContext comments {}",a.getComments()));
 
     return context;
   }
