@@ -5,11 +5,14 @@ import static java.util.stream.Collectors.joining;
 import static org.folio.circulation.support.json.JsonPropertyWriter.write;
 import static org.folio.circulation.support.utils.DateFormatUtil.formatDateTime;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Account;
 import org.folio.circulation.domain.CallNumberComponents;
 import org.folio.circulation.domain.CheckInContext;
@@ -29,6 +32,7 @@ import io.vertx.core.json.JsonObject;
 
 public class TemplateContextUtil {
 
+  protected static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private static final String USER = "user";
   private static final String ITEM = "item";
   private static final String REQUEST = "request";
@@ -304,6 +308,7 @@ public class TemplateContextUtil {
   private static JsonObject createFeeActionContext(FeeFineAction feeFineAction) {
     final JsonObject context = new JsonObject();
     String actionDateString = formatDateTime(feeFineAction.getDateAction());
+    log.info("createFeeActionContext comments : {}",feeFineAction.getComments());
 
     write(context, "type", feeFineAction.getActionType());
     write(context, "actionDate", actionDateString);
