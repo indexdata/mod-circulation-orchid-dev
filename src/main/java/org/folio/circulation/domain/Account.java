@@ -6,11 +6,14 @@ import static org.folio.circulation.support.json.JsonPropertyFetcher.getNestedSt
 import static org.folio.circulation.support.json.JsonPropertyFetcher.getProperty;
 import static org.folio.circulation.support.utils.DateTimeUtil.compareToMillis;
 
+import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.support.json.JsonPropertyWriter;
 
 import io.vertx.core.json.JsonObject;
@@ -19,6 +22,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 public class Account {
+  protected static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private final String id;
   private final AccountRelatedRecordsInfo relatedRecordsInfo;
   private final FeeAmount amount;
@@ -30,6 +34,7 @@ public class Account {
   private final ZonedDateTime actualRecordCreationDate;
 
   public static Account from(JsonObject representation) {
+    log.info("Account class JsonObject {}",representation);
     return new Account(getProperty(representation, "id"),
       new AccountRelatedRecordsInfo(
         new AccountFeeFineOwnerInfo(
