@@ -280,6 +280,10 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan) {
+    if(loan.getActualCostRecord()!=null)
+      log.info("createFeeFineNoticeContext loan.actualCostRecord id : {}",loan.getActualCostRecord().getId());
+    else
+      log.info("createFeeFineNoticeContext loan.actualCostRecord is null");
     return createLoanNoticeContext(loan)
       .put(FEE_CHARGE, createFeeChargeContext(account));
   }
@@ -301,7 +305,7 @@ public class TemplateContextUtil {
     write(context, "remainingAmount", account.getRemaining().toScaledString());
     write(context, "chargeDate", account.getCreationDate());
     write(context, "chargeDateTime", account.getCreationDate());
-    account.getFeeFineActions().stream().forEach(a->log.info("createFeeChargeContext comments {}",a.getComments()));
+    account.getFeeFineActions().forEach(a->log.info("createFeeChargeContext comments {}",a.getComments()));
 
     return context;
   }
