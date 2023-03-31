@@ -92,11 +92,16 @@ public class RequestNoticeSender {
   private final EventPublisher eventPublisher;
   protected final LocationRepository locationRepository;
 
+  private long recallRequestCount = 0l;
 
   public Result<RequestAndRelatedRecords> sendNoticeOnRequestCreated(
     RequestAndRelatedRecords records) {
 
     Request request = records.getRequest();
+    recallRequestCount = records.getRequestQueue().getRequests()
+      .stream()
+      .filter(r -> r.getRequestType() == RequestType.RECALL && r.isNotYetFilled())
+      .count();
 
     if (request.hasItemId()) {
       sendConfirmationNoticeForRequestWithItemId(request);
@@ -213,7 +218,7 @@ public class RequestNoticeSender {
 
   private CompletableFuture<Result<Void>> sendNoticeForRequestWithoutItemId(Request request,
     NoticeEventType eventType, Function<TlrSettingsConfiguration, UUID> templateIdExtractor) {
-    log.info("Inside send notice sendNoticeForRequestWithoutItemId ");
+
     TlrSettingsConfiguration tlrSettings = request.getTlrSettingsConfiguration();
     UUID templateId = templateIdExtractor.apply(tlrSettings);
 
@@ -226,14 +231,13 @@ public class RequestNoticeSender {
 
   private CompletableFuture<Result<Void>> sendNotice(Request request, UUID templateId,
     NoticeEventType eventType) {
-    log.info("Inside Request notice service with request {}",request);
 
     JsonObject noticeContext = createRequestNoticeContext(request);
     NoticeLogContext noticeLogContext = NoticeLogContext.from(request)
       .withTriggeringEvent(eventType.getRepresentation())
       .withTemplateId(templateId.toString());
     PatronNotice notice = buildEmail(request.getUserId(), templateId, noticeContext);
-  log.info("After build email in request notice sender with type patron notice {}",notice);
+
     return patronNoticeService.sendNotice(notice, noticeLogContext);
   }
 
@@ -276,7 +280,8 @@ public class RequestNoticeSender {
   private CompletableFuture<Result<Void>> sendNoticeOnRecall(Request request) {
     Loan loan = request.getLoan();
 
-    if (!request.isRecall() || loan == null || loan.getUser() == null || loan.getItem() == null) {
+    if (!request.isRecall() || loan == null || loan.getUser() == null
+      || loan.getItem() == null || recallRequestCount > 1) {
       return ofAsync(null);
     }
 

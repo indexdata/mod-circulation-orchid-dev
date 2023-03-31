@@ -6,7 +6,6 @@ import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static java.time.ZoneOffset.UTC;
 import static java.util.stream.Collectors.joining;
 import static org.folio.circulation.support.json.JsonPropertyFetcher.getDateTimeProperty;
-import static org.folio.circulation.support.json.JsonPropertyFetcher.getDoubleProperty;
 import static org.folio.circulation.support.json.JsonPropertyFetcher.getIntegerProperty;
 import static org.folio.circulation.support.json.JsonPropertyFetcher.getNestedStringProperty;
 import static org.folio.circulation.support.json.JsonPropertyFetcher.getObjectProperty;
@@ -86,7 +85,7 @@ public class TemplateContextMatchers {
     String copyNumber = findRepresentationCopyNumber(itemResource, applyHoldingRecord);
 
     Map<String, Matcher<String>> tokenMatchers = new HashMap<>();
-    //tokenMatchers.put("item.title", notNullValue(String.class));
+    tokenMatchers.put("item.title", notNullValue(String.class));
     tokenMatchers.put("item.allContributors", notNullValue(String.class));
     tokenMatchers.put("item.barcode", is(item.getString("barcode")));
     tokenMatchers.put("item.callNumber", is(callNumber));
@@ -98,7 +97,7 @@ public class TemplateContextMatchers {
     tokenMatchers.put("item.effectiveLocationLibrary", notNullValue(String.class));
     tokenMatchers.put("item.effectiveLocationCampus", notNullValue(String.class));
     tokenMatchers.put("item.effectiveLocationInstitution", notNullValue(String.class));
-    //tokenMatchers.put("item.loanType", notNullValue(String.class));
+    tokenMatchers.put("item.effectiveLocationDiscoveryDisplayName", notNullValue(String.class));
     return tokenMatchers;
   }
 
@@ -296,8 +295,8 @@ public class TemplateContextMatchers {
       hasJsonPath("feeAction.type", is(action.getString("typeAction"))),
       hasJsonPath("feeAction.actionDate", isEquivalentTo(getDateTimeProperty(action, "dateAction"))),
       hasJsonPath("feeAction.actionDateTime", isEquivalentTo(getDateTimeProperty(action, "dateAction"))),
-      hasJsonPath("feeAction.amount", is(getDoubleProperty(action, "amountAction", -1.0))),
-      hasJsonPath("feeAction.remainingAmount", is(getDoubleProperty(action, "balance", -1.0)))
+      hasJsonPath("feeAction.amount", is(new FeeAmount(action.getDouble("amountAction")).toScaledString())),
+      hasJsonPath("feeAction.remainingAmount", is(new FeeAmount(action.getDouble("balance")).toScaledString()))
     );
   }
 
