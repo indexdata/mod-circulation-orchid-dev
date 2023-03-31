@@ -25,7 +25,13 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import java.lang.invoke.MethodHandles;
+
+
 public abstract class ScheduledNoticeProcessingResource extends Resource {
+  protected static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private final String rootPath;
 
   ScheduledNoticeProcessingResource(String rootPath, HttpClient client) {
@@ -41,6 +47,7 @@ public abstract class ScheduledNoticeProcessingResource extends Resource {
   }
 
   private void process(RoutingContext routingContext) {
+    log.info("ScheduledNoticeProcessingResource process()");
     final WebContext context = new WebContext(routingContext);
     final Clients clients = Clients.create(context, client);
 

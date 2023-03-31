@@ -62,6 +62,7 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createLoanNoticeContext(Loan loan) {
+    log.info("createLoanNoticeContext loan {}",loan);
     return new JsonObject()
       .put(USER, createUserContext(loan.getUser()))
       .put(ITEM, createItemContext(loan.getItem()))
@@ -290,14 +291,16 @@ public class TemplateContextUtil {
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan,
     FeeFineAction feeFineAction) {
-
+    log.info("createFeeFineNoticeContext Account id : {}",account.getId());
+    log.info("createFeeFineNoticeContext Loan id : {}",loan.getId());
+    log.info("createFeeFineNoticeContext FeeFineAction id : {}",feeFineAction.getId());
+    log.info("createFeeFineNoticeContext account {} Loan {} FeeFineAction {}",account,loan,feeFineAction);
     return createFeeFineNoticeContext(account, loan)
       .put(FEE_ACTION, createFeeActionContext(feeFineAction));
   }
 
   private static JsonObject createFeeChargeContext(Account account) {
     JsonObject context = new JsonObject();
-
     write(context, "owner", account.getFeeFineOwner());
     write(context, "type", account.getFeeFineType());
     write(context, "paymentStatus", account.getPaymentStatus());

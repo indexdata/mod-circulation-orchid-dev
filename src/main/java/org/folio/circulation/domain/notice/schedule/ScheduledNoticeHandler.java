@@ -63,11 +63,13 @@ public abstract class ScheduledNoticeHandler {
 
   public CompletableFuture<Result<List<ScheduledNotice>>> handleNotices(
     Collection<ScheduledNotice> scheduledNotices) {
-
+    log.info("handleNotices notices");
+    scheduledNotices.forEach(a->log.info("handleNotices notice id : {}",a.getId()));
     return allOf(scheduledNotices, this::handleNotice);
   }
 
   private CompletableFuture<Result<ScheduledNotice>> handleNotice(ScheduledNotice notice) {
+    log.info("handleNotice notice id : {}", notice.getId());
     return handleContext(new ScheduledNoticeContext(notice));
   }
 
@@ -85,7 +87,7 @@ public abstract class ScheduledNoticeHandler {
 
   protected CompletableFuture<Result<ScheduledNoticeContext>> fetchNoticeData(
     ScheduledNoticeContext context) {
-
+    log.info("fetchNoticeData");
     return ofAsync(() -> context)
       .thenCompose(r -> r.after(this::fetchData))
       .thenApply(r -> r.mapFailure(f -> publishErrorEvent(f, context.getNotice())));
@@ -147,11 +149,12 @@ public abstract class ScheduledNoticeHandler {
 
   private CompletableFuture<Result<ScheduledNoticeContext>> sendNotice(
     ScheduledNoticeContext context) {
-
+    log.info("sendNotice");
     if (isNoticeIrrelevant(context)) {
+      log.info("isNoticeIrrelevant : {}",isNoticeIrrelevant(context));
       return ofAsync(() -> context);
     }
-
+    log.info("sendNotice return part");
     return patronNoticeService.sendNotice(
       context.getNotice().getConfiguration(),
       context.getNotice().getRecipientUserId(),
@@ -162,7 +165,7 @@ public abstract class ScheduledNoticeHandler {
 
   protected CompletableFuture<Result<ScheduledNoticeContext>> fetchPatronNoticePolicyIdForLoan(
     ScheduledNoticeContext context) {
-
+    log.info("fetchPatronNoticePolicyIdForLoan");
     return fetchPatronNoticePolicyId(context, context.getLoan());
   }
 
@@ -189,7 +192,7 @@ public abstract class ScheduledNoticeHandler {
     ScheduledNoticeContext context) {
 
     String templateId = context.getNotice().getConfiguration().getTemplateId();
-
+    log.info("FeeFineScheduledNoticeHandler fetchTemplate templateId:{}",templateId);
     var responseInterpreter = new ResponseInterpreter<ScheduledNoticeContext>()
       .on(404, failed(new RecordNotFoundFailure("template", templateId)))
       .on(200, succeeded(context))

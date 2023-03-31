@@ -22,8 +22,12 @@ import org.folio.circulation.support.utils.ClockUtil;
 
 import io.vertx.core.http.HttpClient;
 
-public class LoanScheduledNoticeProcessingResource extends ScheduledNoticeProcessingResource {
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import java.lang.invoke.MethodHandles;
 
+public class LoanScheduledNoticeProcessingResource extends ScheduledNoticeProcessingResource {
+  protected static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   public LoanScheduledNoticeProcessingResource(HttpClient client) {
     super("/circulation/loan-scheduled-notices-processing", client);
   }
@@ -45,7 +49,7 @@ public class LoanScheduledNoticeProcessingResource extends ScheduledNoticeProces
     RequestRepository requestRepository,
     LoanRepository loanRepository,
     MultipleRecords<ScheduledNotice> noticesResult) {
-
+    log.info("LoanScheduledNoticeProcessingResource handleNotices()");
     return new LoanScheduledNoticeHandler(clients, loanRepository, ClockUtil.getZonedDateTime())
       .handleNotices(noticesResult.getRecords())
       .thenApply(mapResult(v -> noticesResult));

@@ -76,7 +76,7 @@ public class DueDateNotRealTimeScheduledNoticeProcessingResource extends Schedul
   protected CompletableFuture<Result<MultipleRecords<ScheduledNotice>>> handleNotices(
     Clients clients, RequestRepository requestRepository,
     LoanRepository loanRepository, MultipleRecords<ScheduledNotice> notices) {
-
+    log.info("DueDateNotRealTimeScheduledNoticeProcessingResource handleNotices()");
     Map<ScheduledNoticeGroupDefinition, List<ScheduledNotice>> orderedGroups =
       notices.getRecords().stream().collect(Collectors.groupingBy(
         ScheduledNoticeGroupDefinition::from,
