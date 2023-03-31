@@ -290,7 +290,7 @@ public class TemplateContextUtil {
     if(loan.getActualCostRecord()!=null)
       log.info("patron comments val {} , {}",loan.getActualCostRecord().getAdditionalInfoForStaff(),loan.getActualCostRecord().getAdditionalInfoForPatron());
     return createLoanNoticeContext(loan)
-      .put(FEE_CHARGE, createFeeChargeContext(account));
+      .put(FEE_CHARGE, createFeeChargeContext(account, loan));
   }
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan,
@@ -300,7 +300,7 @@ public class TemplateContextUtil {
       .put(FEE_ACTION, createFeeActionContext(feeFineAction));
   }
 
-  private static JsonObject createFeeChargeContext(Account account) {
+  private static JsonObject createFeeChargeContext(Account account, Loan loan) {
     JsonObject context = new JsonObject();
 
     write(context, "owner", account.getFeeFineOwner());
@@ -310,6 +310,10 @@ public class TemplateContextUtil {
     write(context, "remainingAmount", account.getRemaining().toScaledString());
     write(context, "chargeDate", account.getCreationDate());
     write(context, "chargeDateTime", account.getCreationDate());
+
+    if(loan.getActualCostRecord() !=null){
+      write(context, "additionalInfo", loan.getActualCostRecord().getAdditionalInfoForPatron());
+    }
 
     return context;
   }
