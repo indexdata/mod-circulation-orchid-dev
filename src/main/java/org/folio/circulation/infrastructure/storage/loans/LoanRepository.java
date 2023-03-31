@@ -433,6 +433,7 @@ public class LoanRepository implements GetManyRecordsRepository<Loan> {
   }
 
   public CompletableFuture<Result<Loan>> findLoanForAccount(Account account) {
+    log.info("Inside findLoanForAccount with account {}",account);
     if (account == null) {
       return completedFuture(succeeded(null));
     }

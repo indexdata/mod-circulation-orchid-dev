@@ -7,6 +7,7 @@ import static org.folio.circulation.support.results.Result.ofAsync;
 import static org.folio.circulation.support.results.Result.succeeded;
 import static org.folio.circulation.support.results.ResultBinding.mapResult;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +16,8 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Loan;
 import org.folio.circulation.domain.LoanAndRelatedRecords;
 import org.folio.circulation.domain.MultipleRecords;
@@ -36,6 +39,9 @@ import io.vertx.core.json.JsonObject;
 
 public class LoanPolicyRepository extends CirculationPolicyRepository<LoanPolicy> {
   private final GetManyRecordsClient fixedDueDateSchedulesStorageClient;
+
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
 
   public LoanPolicyRepository(Clients clients) {
     super(clients.loanPoliciesStorage(), clients);
@@ -67,6 +73,7 @@ public class LoanPolicyRepository extends CirculationPolicyRepository<LoanPolicy
   }
 
   public CompletableFuture<Result<Loan>> findPolicyForLoan(Loan loan) {
+    log.info("Inside findPolicyForLoan with loan {} ",loan);
     return getLoanPolicyById(loan.getLoanPolicyId())
         .thenApply(result -> result.map(loan::withLoanPolicy));
   }

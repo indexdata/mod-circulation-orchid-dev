@@ -737,9 +737,7 @@ public class Loan implements ItemRelatedRecord, UserRelatedRecord {
       "id=" + getId() +
       ", itemId=" + getItemId() +
       ", userId=" + getUserId() +
-      ", actualRecordId=" + this.actualCostRecord.getId() +
-      ", actualRecordStaffInfo=" + this.actualCostRecord.getAdditionalInfoForStaff() +
-      ", actualRecordPatronInfo=" + this.actualCostRecord.getAdditionalInfoForPatron() +
+      ", actualRecordId=" + this.actualCostRecord +
       '}';
   }
 }

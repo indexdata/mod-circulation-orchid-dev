@@ -3,8 +3,11 @@ package org.folio.circulation.resources;
 import static org.folio.circulation.support.results.AsynchronousResultBindings.safelyInitialise;
 import static org.folio.circulation.support.results.MappingFunctions.toFixedValue;
 
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.CompletableFuture;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.MultipleRecords;
 import org.folio.circulation.domain.notice.schedule.ScheduledNotice;
 import org.folio.circulation.infrastructure.storage.ConfigurationRepository;
@@ -26,6 +29,9 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 public abstract class ScheduledNoticeProcessingResource extends Resource {
+
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
   private final String rootPath;
 
   ScheduledNoticeProcessingResource(String rootPath, HttpClient client) {
@@ -41,6 +47,7 @@ public abstract class ScheduledNoticeProcessingResource extends Resource {
   }
 
   private void process(RoutingContext routingContext) {
+    log.info("Inside schedule notice processing resource");
     final WebContext context = new WebContext(routingContext);
     final Clients clients = Clients.create(context, client);
 

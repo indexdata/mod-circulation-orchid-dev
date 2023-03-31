@@ -63,7 +63,7 @@ public abstract class ScheduledNoticeHandler {
 
   public CompletableFuture<Result<List<ScheduledNotice>>> handleNotices(
     Collection<ScheduledNotice> scheduledNotices) {
-
+    log.info("Inside scheduled notices {} ", scheduledNotices);
     return allOf(scheduledNotices, this::handleNotice);
   }
 
