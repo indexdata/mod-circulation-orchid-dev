@@ -286,6 +286,9 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan) {
+    log.info("loan actual cost record {}",loan.getActualCostRecord());
+    if(loan.getActualCostRecord()!=null)
+      log.info("patron comments val {} , {}",loan.getActualCostRecord().getAdditionalInfoForStaff(),loan.getActualCostRecord().getAdditionalInfoForPatron());
     return createLoanNoticeContext(loan)
       .put(FEE_CHARGE, createFeeChargeContext(account));
   }

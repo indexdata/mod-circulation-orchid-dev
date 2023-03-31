@@ -85,7 +85,7 @@ public abstract class ScheduledNoticeHandler {
 
   protected CompletableFuture<Result<ScheduledNoticeContext>> fetchNoticeData(
     ScheduledNoticeContext context) {
-
+    log.info("Inside fetch notice data of Scheduled Notice handler with context {}",context);
     return ofAsync(() -> context)
       .thenCompose(r -> r.after(this::fetchData))
       .thenApply(r -> r.mapFailure(f -> publishErrorEvent(f, context.getNotice())));

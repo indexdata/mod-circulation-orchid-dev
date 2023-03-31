@@ -87,7 +87,7 @@ public class ActualCostRecordRepository {
   public CompletableFuture<Result<Loan>> findByLoan(Loan loan) {
     Result<CqlQuery> query = exactMatch(LOAN_ID_FIELD_NAME, loan.getId())
       .map(q -> q.sortBy(sortBy(descending(LOSS_DATE_FIELD_NAME))));
-
+    log.info("Inside findByLoan with loan Object {} , query {}", loan, query);
     return findOne(query)
       .thenApply(mapResult(loan::withActualCostRecord));
   }

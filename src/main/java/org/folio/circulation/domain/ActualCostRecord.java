@@ -29,6 +29,8 @@ public class ActualCostRecord {
   private final ActualCostRecordInstance instance;
   private final ActualCostRecordFeeFine feeFine;
   private final ZonedDateTime creationDate;
+  private final String additionalInfoForStaff;
+  private final String additionalInfoForPatron;
 
   @NoArgsConstructor(force = true)
   @AllArgsConstructor

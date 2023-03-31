@@ -56,6 +56,7 @@ import static org.folio.circulation.support.utils.DateTimeUtil.isBeforeMillis;
 import static org.folio.circulation.support.utils.DateTimeUtil.isSameMillis;
 import static org.folio.circulation.support.utils.DateTimeUtil.mostRecentDate;
 
+import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.UUID;
@@ -63,6 +64,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.policy.LoanPolicy;
 import org.folio.circulation.domain.policy.OverdueFinePolicy;
 import org.folio.circulation.domain.policy.lostitem.LostItemPolicy;
@@ -76,6 +79,7 @@ import lombok.Getter;
 
 @AllArgsConstructor(access = PRIVATE)
 public class Loan implements ItemRelatedRecord, UserRelatedRecord {
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private final JsonObject representation;
   @Getter
   private final Item item;
@@ -332,6 +336,7 @@ public class Loan implements ItemRelatedRecord, UserRelatedRecord {
   }
 
   public Loan withActualCostRecord(ActualCostRecord actualCostRecord) {
+    log.info("Inside withActualCostRecord {} ", actualCostRecord);
     return new Loan(representation, item, user, proxy, checkinServicePoint, checkoutServicePoint,
       originalDueDate, previousDueDate, policies, accounts, actualCostRecord,dueDateChangedByHold, dueDateChangedByNearExpireUser);
   }
@@ -728,10 +733,13 @@ public class Loan implements ItemRelatedRecord, UserRelatedRecord {
 
   @Override
   public String toString() {
-    return "Loan{" +
+    return "Loan Value{" +
       "id=" + getId() +
       ", itemId=" + getItemId() +
       ", userId=" + getUserId() +
+      ", actualRecordId=" + this.actualCostRecord.getId() +
+      ", actualRecordStaffInfo=" + this.actualCostRecord.getAdditionalInfoForStaff() +
+      ", actualRecordPatronInfo=" + this.actualCostRecord.getAdditionalInfoForPatron() +
       '}';
   }
 }

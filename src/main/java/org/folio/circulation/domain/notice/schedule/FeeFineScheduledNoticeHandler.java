@@ -14,6 +14,7 @@ import org.folio.circulation.domain.Loan;
 import org.folio.circulation.domain.policy.Period;
 import org.folio.circulation.domain.representations.logs.NoticeLogContext;
 import org.folio.circulation.domain.representations.logs.NoticeLogContextItem;
+import org.folio.circulation.infrastructure.storage.ActualCostRecordRepository;
 import org.folio.circulation.infrastructure.storage.feesandfines.FeeFineActionRepository;
 import org.folio.circulation.infrastructure.storage.loans.LoanPolicyRepository;
 import org.folio.circulation.infrastructure.storage.loans.LoanRepository;
@@ -25,16 +26,19 @@ import io.vertx.core.json.JsonObject;
 public class FeeFineScheduledNoticeHandler extends ScheduledNoticeHandler {
   private final FeeFineActionRepository actionRepository;
   private final LoanPolicyRepository loanPolicyRepository;
+  private final ActualCostRecordRepository actualCostRecordRepository;
 
   public FeeFineScheduledNoticeHandler(Clients clients, LoanRepository loanRepository) {
     super(clients, loanRepository);
     this.actionRepository = new FeeFineActionRepository(clients);
     this.loanPolicyRepository = new LoanPolicyRepository(clients);
+    this.actualCostRecordRepository = new ActualCostRecordRepository(clients);
   }
 
   @Override
   protected CompletableFuture<Result<ScheduledNoticeContext>> fetchData(
     ScheduledNoticeContext context) {
+    log.info("Inside fetchData of feeFineScheduled Notice handler {}",context);
     return ofAsync(() -> context)
       .thenCompose(r -> r.after(this::fetchTemplate))
       .thenCompose(r -> r.after(this::fetchAction))
@@ -59,13 +63,14 @@ public class FeeFineScheduledNoticeHandler extends ScheduledNoticeHandler {
 
   private CompletableFuture<Result<ScheduledNoticeContext>> fetchLoan(
     ScheduledNoticeContext context) {
-
+  log.info("Inside fetch Loan with context {} ",context);
     if (isNoticeIrrelevant(context)) {
       return ofAsync(() -> context);
     }
 
     // this also fetches user and item
     return loanRepository.findLoanForAccount(context.getAccount())
+      .thenCompose(r -> r.after(actualCostRecordRepository::findByLoan))
       .thenCompose(r -> r.after(loanPolicyRepository::findPolicyForLoan))
       .thenApply(mapResult(context::withLoan))
       .thenApply(r -> r.next(this::failWhenLoanIsIncomplete));
@@ -104,6 +109,7 @@ public class FeeFineScheduledNoticeHandler extends ScheduledNoticeHandler {
 
   @Override
   protected JsonObject buildNoticeContextJson(ScheduledNoticeContext context) {
+    log.info("Inside buildNoticeContextJson with context {}", context);
     return context.getNotice().getTriggeringEvent().isAutomaticFeeFineAdjustment()
       ? createFeeFineNoticeContext(context.getAccount(), context.getLoan(), context.getAction())
       : createFeeFineNoticeContext(context.getAccount(), context.getLoan());
