@@ -737,7 +737,8 @@
             "pubsub.publish.post",
             "circulation-storage.circulation-rules.get",
             "circulation.rules.notice-policy.get",
-            "templates.item.get"
+            "templates.item.get",
+            "actual-cost-record-storage.actual-cost-records.collection.get"
           ],
           "unit": "minute",
           "delay": "2"
@@ -769,7 +770,8 @@
             "users.item.get",
             "users.collection.get",
             "pubsub.publish.post",
-            "templates.item.get"
+            "templates.item.get",
+            "actual-cost-record-storage.actual-cost-records.collection.get"
           ],
           "unit": "minute",
           "delay": "2"
@@ -863,7 +865,8 @@
             "circulation-storage.patron-notice-policies.collection.get",
             "circulation.rules.notice-policy.get",
             "scheduled-notice-storage.scheduled-notices.item.post",
-            "actual-cost-record-storage.actual-cost-records.item.post"
+            "actual-cost-record-storage.actual-cost-records.item.post",
+            "actual-cost-record-storage.actual-cost-records.collection.get"
           ],
           "unit": "minute",
           "delay": "35"
