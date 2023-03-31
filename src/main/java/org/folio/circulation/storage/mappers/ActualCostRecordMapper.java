@@ -164,6 +164,8 @@ public class ActualCostRecordMapper {
         .withOwner(getProperty(feeFine, "owner"))
         .withTypeId(getProperty(feeFine, "typeId"))
         .withType(getProperty(feeFine, "type")),
-      getNestedDateTimeProperty(representation, "metadata", "createdDate"));
+      getNestedDateTimeProperty(representation, "metadata", "createdDate"),
+      getProperty(representation, "additionalInfoForStaff"),
+      getProperty(representation, "additionalInfoForPatron"));
   }
 }
