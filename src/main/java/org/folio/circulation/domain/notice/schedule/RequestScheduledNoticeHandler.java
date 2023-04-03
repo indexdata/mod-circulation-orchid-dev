@@ -44,13 +44,11 @@ public abstract class RequestScheduledNoticeHandler extends ScheduledNoticeHandl
 
   @Override
   protected JsonObject buildNoticeContextJson(ScheduledNoticeContext context) {
-    log.info("buildNoticeContextJson");
     return createRequestNoticeContext(context.getRequest());
   }
 
   @Override
   protected CompletableFuture<Result<ScheduledNotice>> updateNotice(ScheduledNoticeContext context) {
-    log.info("RequestScheduledNoticeHandler updateNotice");
     Request request = context.getRequest();
     ScheduledNotice notice = context.getNotice();
     boolean isNoticeNonRecurring = !notice.getConfiguration().isRecurring();
@@ -72,7 +70,6 @@ public abstract class RequestScheduledNoticeHandler extends ScheduledNoticeHandl
 
   @Override
   protected NoticeLogContext buildNoticeLogContext(ScheduledNoticeContext context) {
-    log.info("buildNoticeLogContext");
     ScheduledNotice notice = context.getNotice();
     Request request = context.getRequest();
 

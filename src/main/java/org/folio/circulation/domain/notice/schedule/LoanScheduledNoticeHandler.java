@@ -87,7 +87,6 @@ public class LoanScheduledNoticeHandler extends ScheduledNoticeHandler {
   @Override
   protected CompletableFuture<Result<ScheduledNotice>> updateNotice(
     ScheduledNoticeContext context) {
-    log.info("LoanScheduledNoticeHandler updateNotice");
     Loan loan = context.getLoan();
     ScheduledNotice notice = context.getNotice();
     ScheduledNoticeConfig noticeConfig = notice.getConfiguration();
@@ -214,7 +213,6 @@ public class LoanScheduledNoticeHandler extends ScheduledNoticeHandler {
 
   @Override
   protected NoticeLogContext buildNoticeLogContext(ScheduledNoticeContext context) {
-    log.info("buildNoticeLogContext");
     return new NoticeLogContext()
       .withUser(context.getLoan().getUser())
       .withItems(singletonList(buildNoticeLogContextItem(context)));
@@ -222,7 +220,6 @@ public class LoanScheduledNoticeHandler extends ScheduledNoticeHandler {
 
   @Override
   protected JsonObject buildNoticeContextJson(ScheduledNoticeContext context) {
-    log.info("buildNoticeContextJson");
     return createLoanNoticeContext(context.getLoan());
   }
 

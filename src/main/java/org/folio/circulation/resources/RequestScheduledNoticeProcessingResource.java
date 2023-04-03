@@ -57,7 +57,6 @@ public class RequestScheduledNoticeProcessingResource extends ScheduledNoticePro
   protected CompletableFuture<Result<MultipleRecords<ScheduledNotice>>> handleNotices(
     Clients clients, RequestRepository requestRepository, LoanRepository loanRepository,
     MultipleRecords<ScheduledNotice> scheduledNoticesRecords) {
-    log.info("RequestScheduledNoticeProcessingResource handleNotices()");
     Collection<ScheduledNotice> notices = scheduledNoticesRecords.getRecords();
 
     Set<String> requestIds = notices.stream()
@@ -74,7 +73,6 @@ public class RequestScheduledNoticeProcessingResource extends ScheduledNoticePro
   private CompletableFuture<Result<List<ScheduledNotice>>> handleNotices(
     Clients clients, RequestRepository requestRepository, LoanRepository loanRepository,
     Collection<ScheduledNotice> notices, Collection<Request> requests) {
-    log.info("RequestScheduledNoticeProcessingResource handleNotices() handleNoticeswithAndWithoutItemId");
     Map<String, Request> requestsById = requests.stream()
       .collect(toMap(Request::getId, identity()));
 
@@ -96,7 +94,6 @@ public class RequestScheduledNoticeProcessingResource extends ScheduledNoticePro
     if (contexts == null || contexts.isEmpty()) {
       return ofAsync(() -> null);
     }
-    log.info("RequestScheduledNoticeProcessingResource, handleNoticesForRequestsWithItemId()");
     return new ItemAwareRequestScheduledNoticeHandler(clients, requestRepository, loanRepository)
       .handleContexts(contexts);
   }
@@ -108,7 +105,6 @@ public class RequestScheduledNoticeProcessingResource extends ScheduledNoticePro
     if (contexts == null || contexts.isEmpty()) {
       return ofAsync(() -> null);
     }
-    log.info("RequestScheduledNoticeProcessingResource, handleNoticesForRequestsWithoutItemId()");
     return new InstanceAwareRequestScheduledNoticeHandler(clients, requestRepository, loanRepository)
       .handleContexts(contexts);
   }

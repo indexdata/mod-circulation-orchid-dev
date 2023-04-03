@@ -5,14 +5,11 @@ import static java.util.stream.Collectors.joining;
 import static org.folio.circulation.support.json.JsonPropertyWriter.write;
 import static org.folio.circulation.support.utils.DateFormatUtil.formatDateTime;
 
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Account;
 import org.folio.circulation.domain.CallNumberComponents;
 import org.folio.circulation.domain.CheckInContext;
@@ -32,7 +29,6 @@ import io.vertx.core.json.JsonObject;
 
 public class TemplateContextUtil {
 
-  protected static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private static final String USER = "user";
   private static final String ITEM = "item";
   private static final String REQUEST = "request";
@@ -62,7 +58,6 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createLoanNoticeContext(Loan loan) {
-    log.info("createLoanNoticeContext loan {}",loan);
     return new JsonObject()
       .put(USER, createUserContext(loan.getUser()))
       .put(ITEM, createItemContext(loan.getItem()))
@@ -281,20 +276,14 @@ public class TemplateContextUtil {
   }
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan) {
-    if(loan.getActualCostRecord()!=null)
-      log.info("createFeeFineNoticeContext loan.actualCostRecord id : {}",loan.getActualCostRecord().getId());
-    else
-      log.info("createFeeFineNoticeContext loan.actualCostRecord is null");
+
     return createLoanNoticeContext(loan)
       .put(FEE_CHARGE, createFeeChargeContext(account));
   }
 
   public static JsonObject createFeeFineNoticeContext(Account account, Loan loan,
     FeeFineAction feeFineAction) {
-    log.info("createFeeFineNoticeContext Account id : {}",account.getId());
-    log.info("createFeeFineNoticeContext Loan id : {}",loan.getId());
-    log.info("createFeeFineNoticeContext FeeFineAction id : {}",feeFineAction.getId());
-    log.info("createFeeFineNoticeContext account {} Loan {} FeeFineAction {}",account,loan,feeFineAction);
+
     return createFeeFineNoticeContext(account, loan)
       .put(FEE_ACTION, createFeeActionContext(feeFineAction));
   }
@@ -308,7 +297,6 @@ public class TemplateContextUtil {
     write(context, "remainingAmount", account.getRemaining().toScaledString());
     write(context, "chargeDate", account.getCreationDate());
     write(context, "chargeDateTime", account.getCreationDate());
-    account.getFeeFineActions().forEach(a->log.info("createFeeChargeContext comments {}",a.getComments()));
 
     return context;
   }
@@ -316,7 +304,6 @@ public class TemplateContextUtil {
   private static JsonObject createFeeActionContext(FeeFineAction feeFineAction) {
     final JsonObject context = new JsonObject();
     String actionDateString = formatDateTime(feeFineAction.getDateAction());
-    log.info("createFeeActionContext comments : {}",feeFineAction.getComments());
 
     write(context, "type", feeFineAction.getActionType());
     write(context, "actionDate", actionDateString);

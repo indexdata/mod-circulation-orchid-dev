@@ -25,12 +25,7 @@ import org.folio.circulation.support.utils.ClockUtil;
 
 import io.vertx.core.http.HttpClient;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import java.lang.invoke.MethodHandles;
-
 public class FeeFineScheduledNoticeProcessingResource extends ScheduledNoticeProcessingResource {
-  protected static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   private static final List<TriggeringEvent> TRIGGERING_EVENTS_TO_PROCESS = List.of(
     OVERDUE_FINE_RETURNED,
     OVERDUE_FINE_RENEWED,
@@ -58,7 +53,6 @@ public class FeeFineScheduledNoticeProcessingResource extends ScheduledNoticePro
     RequestRepository requestRepository,
     LoanRepository loanRepository,
     MultipleRecords<ScheduledNotice> scheduledNotices) {
-    log.info("FeeFineScheduledNoticeProcessingResource handleNotices()");
     return new FeeFineScheduledNoticeHandler(clients, loanRepository)
       .handleNotices(scheduledNotices.getRecords())
       .thenApply(mapResult(v -> scheduledNotices));
