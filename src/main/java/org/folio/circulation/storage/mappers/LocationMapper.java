@@ -18,6 +18,7 @@ import io.vertx.core.json.JsonObject;
 
 public class LocationMapper {
   public Location toDomain(JsonObject representation) {
+    System.out.println("ravi here " + representation);
     return new Location(getProperty(representation, "id"),
       getProperty(representation, "name"),
       getProperty(representation, "code"),
