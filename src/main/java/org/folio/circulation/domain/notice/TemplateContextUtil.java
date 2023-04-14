@@ -180,6 +180,7 @@ public class TemplateContextUtil {
 
     if (location != null) {
       itemContext
+        .put("effectiveLocationPrimaryServicePoint", location.getPrimaryServicePoint().getName())
         .put("effectiveLocationSpecific", location.getName())
         .put("effectiveLocationLibrary", location.getLibraryName())
         .put("effectiveLocationCampus", location.getCampusName())

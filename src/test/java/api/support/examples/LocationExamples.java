@@ -70,6 +70,7 @@ public class LocationExamples {
       .forCampus(jubileeCampusId)
       .forLibrary(djanoglyLibraryId)
       .withPrimaryServicePoint(primaryServicePointId)
+      .withPrimaryServicePointName("This is a random primary service point name")
       .servedBy(otherServicePointIds);
   }
 

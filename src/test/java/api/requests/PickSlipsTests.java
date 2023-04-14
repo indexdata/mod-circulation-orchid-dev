@@ -198,6 +198,7 @@ class PickSlipsTests extends APITests {
     assertEquals(item.getDescriptionOfPieces(), itemContext.getString("descriptionOfPieces"));
     assertEquals(actualCheckinDateTime.toString(), itemContext.getString("lastCheckedInDateTime"));
     assertEquals(location.getName(), itemContext.getString("effectiveLocationSpecific"));
+    assertEquals(location.getPrimaryServicePoint().getName(), itemContext.getString("effectiveLocationPrimaryServicePoint"));
 
     CallNumberComponents callNumberComponents = item.getCallNumberComponents();
     assertEquals(callNumberComponents.getCallNumber(), itemContext.getString("callNumber"));
