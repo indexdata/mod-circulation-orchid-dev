@@ -23,6 +23,10 @@ public class CollectionResourceClient implements GetManyRecordsClient {
   public CollectionResourceClient(OkapiHttpClient client, URL collectionRoot) {
     this.collectionRoot = collectionRoot;
     this.client = client;
+    System.out.println("ravi2");
+    System.out.println(collectionRoot.getPath());
+    System.out.println(collectionRoot.toString());
+    System.out.println(collectionRoot.getHost());
   }
 
   public CompletableFuture<Result<Response>> post(JsonObject representation, Object... pathVariables) {
