@@ -118,6 +118,17 @@ public class PickSlipsResource extends Resource {
 
     Collection<Location> locations = multipleLocations.getRecords();
 
+    System.out.println("----------------start--------------------");
+    for(Location location: locations) {
+      System.out.println(location.getPrimaryServicePoint());
+      System.out.println(location.getPrimaryServicePoint().getId());
+      System.out.println(location.getPrimaryServicePoint().getName());
+      System.out.println(location.getPrimaryServicePoint().getDiscoveryDisplayName());
+      System.out.println(location.getPrimaryServicePoint().getCode());
+      System.out.println(location.getPrimaryServicePoint().getShelvingLagTime());
+    }
+    System.out.println("----------------end--------------------");
+
     Set<String> locationIds = locations.stream()
       .map(Location::getId)
       .filter(StringUtils::isNoneBlank)
