@@ -101,6 +101,13 @@ public class Location {
   }
 
   public Location withPrimaryServicePoint(ServicePoint servicePoint) {
+    System.out.println("ravi3");
+    System.out.println(servicePoint.getId());
+    System.out.println(servicePoint.getName());
+    System.out.println(servicePoint.getDiscoveryDisplayName());
+    System.out.println(servicePoint.getCode());
+    System.out.println(servicePoint.getShelvingLagTime());
+
     return new Location(id, name, code, discoveryDisplayName, servicePointIds, primaryServicePointId,
       institution, campus, library, servicePoint);
   }
