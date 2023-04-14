@@ -180,7 +180,15 @@ public class TemplateContextUtil {
 
     if (location != null) {
       itemContext
-        .put("effectiveLocationPrimaryServicePoint", location.getPrimaryServicePoint().getName())
+        .put("effectiveLocationPrimaryServicePoint", location.getPrimaryServicePoint())
+        .put("effectiveLocationPrimaryServicePointgetName", location.getPrimaryServicePoint().getName())
+        .put("effectiveLocationPrimaryServicePointgetCode", location.getPrimaryServicePoint().getCode())
+        .put("effectiveLocationPrimaryServicePointgetDiscoveryDisplayName", location.getPrimaryServicePoint().getDiscoveryDisplayName())
+        .put("effectiveLocationPrimaryServicePointgetDescription", location.getPrimaryServicePoint().getDescription())
+        .put("effectiveLocationPrimaryServicePointgetIdgetId", location.getPrimaryServicePoint().getId())
+        .put("effectiveLocationPrimaryServicePointgetHoldShelfClosedLibraryDateManagement", location.getPrimaryServicePoint().getHoldShelfClosedLibraryDateManagement())
+        .put("effectiveLocationPrimaryServicePointgetHoldShelfExpiryPeriod", location.getPrimaryServicePoint().getHoldShelfExpiryPeriod())
+        .put("effectiveLocationPrimaryServicePointgetShelvingLagTime", location.getPrimaryServicePoint().getShelvingLagTime())
         .put("effectiveLocationSpecific", location.getName())
         .put("effectiveLocationLibrary", location.getLibraryName())
         .put("effectiveLocationCampus", location.getCampusName())
