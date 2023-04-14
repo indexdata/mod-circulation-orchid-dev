@@ -22,13 +22,8 @@ import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
 import java.util.stream.Collectors;
-import org.folio.circulation.domain.Item;
-import org.folio.circulation.domain.ItemStatus;
-import org.folio.circulation.domain.Location;
-import org.folio.circulation.domain.MultipleRecords;
-import org.folio.circulation.domain.Request;
-import org.folio.circulation.domain.RequestStatus;
-import org.folio.circulation.domain.RequestType;
+
+import org.folio.circulation.domain.*;
 import org.folio.circulation.domain.notice.TemplateContextUtil;
 import org.folio.circulation.infrastructure.storage.ServicePointRepository;
 import org.folio.circulation.infrastructure.storage.inventory.ItemRepository;
@@ -66,6 +61,7 @@ public class PickSlipsResource extends Resource {
   private static final PageLimit LOCATIONS_LIMIT = PageLimit.oneThousand();
 
   private final String rootPath;
+  private String name;
 
 
   public PickSlipsResource(String rootPath, HttpClient client) {
@@ -91,6 +87,9 @@ public class PickSlipsResource extends Resource {
     final PatronGroupRepository patronGroupRepository = new PatronGroupRepository(clients);
     final UUID servicePointId = UUID.fromString(
       routingContext.request().getParam(SERVICE_POINT_ID_PARAM));
+    try {
+      name = servicePointRepository.getServicePointById(servicePointId).get().orElse(null).getName();
+    } catch (Exception e) {}
 
     fetchLocationsForServicePoint(servicePointId, clients)
       .thenComposeAsync(r -> r.after(locations -> fetchPagedItemsForLocations(locations,
@@ -118,16 +117,6 @@ public class PickSlipsResource extends Resource {
 
     Collection<Location> locations = multipleLocations.getRecords();
 
-    System.out.println("----------------start--------------------");
-    for(Location location: locations) {
-      System.out.println(location.getPrimaryServicePoint());
-      System.out.println(location.getPrimaryServicePoint().getId());
-      System.out.println(location.getPrimaryServicePoint().getName());
-      System.out.println(location.getPrimaryServicePoint().getDiscoveryDisplayName());
-      System.out.println(location.getPrimaryServicePoint().getCode());
-      System.out.println(location.getPrimaryServicePoint().getShelvingLagTime());
-    }
-    System.out.println("----------------end--------------------");
 
     Set<String> locationIds = locations.stream()
       .map(Location::getId)
@@ -218,6 +207,7 @@ public class PickSlipsResource extends Resource {
       .collect(Collectors.toList());
     JsonObject jsonRepresentations = new JsonObject()
       .put(PICK_SLIPS_KEY, representations)
+      .put("name", name)
       .put(TOTAL_RECORDS_KEY, representations.size());
 
     return succeeded(jsonRepresentations);
