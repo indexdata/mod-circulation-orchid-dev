@@ -59,6 +59,7 @@ public class PickSlipsResource extends Resource {
   private static final String SERVICE_POINT_ID_PARAM = "servicePointId";
   private static final String EFFECTIVE_LOCATION_ID_KEY = "effectiveLocationId";
   private static final String PRIMARY_SERVICE_POINT_KEY = "primaryServicePoint";
+  private static final String REQUEST_KEY = "request";
 
   private static final PageLimit LOCATIONS_LIMIT = PageLimit.oneThousand();
 
@@ -89,8 +90,6 @@ public class PickSlipsResource extends Resource {
     final UUID servicePointId = UUID.fromString(
       routingContext.request().getParam(SERVICE_POINT_ID_PARAM));
 
-
-    Supplier<CompletableFuture<Result<ServicePoint>>> s = () -> servicePointRepository.getServicePointById(servicePointId);
     fetchLocationsForServicePoint(servicePointId, clients)
       .thenComposeAsync(r -> r.after(locations -> fetchPagedItemsForLocations(locations,
         itemRepository, LocationRepository.using(clients, servicePointRepository))))
@@ -101,8 +100,10 @@ public class PickSlipsResource extends Resource {
       .thenComposeAsync(r -> r.after(servicePointRepository::findServicePointsForRequests))
 
       .thenApply(flatMapResult(this::mapResultToJson))
-      .thenComposeAsync(a -> a.combineAfter(s, (entries, servicePoint) -> {
-        entries.put("primaryServicePointName", servicePoint.getName());
+      .thenComposeAsync(a -> a.combineAfter(() -> servicePointRepository.getServicePointById(servicePointId), (entries, servicePoint) -> {
+        entries.getJsonArray(PICK_SLIPS_KEY).stream().forEach(pickSlip -> {
+          ((JsonObject)pickSlip).getJsonObject(REQUEST_KEY).put("primaryServicePointName", servicePoint.getName());
+        });
         return entries;
       }))
       .thenApply(r -> r.map(JsonHttpResponse::ok))
