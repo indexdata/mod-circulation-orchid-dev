@@ -59,7 +59,7 @@ public class PickSlipsResource extends Resource {
   private static final String SERVICE_POINT_ID_PARAM = "servicePointId";
   private static final String EFFECTIVE_LOCATION_ID_KEY = "effectiveLocationId";
   private static final String PRIMARY_SERVICE_POINT_KEY = "primaryServicePoint";
-  private static final String ITEM_KEY = "item";
+
 
   private static final PageLimit LOCATIONS_LIMIT = PageLimit.oneThousand();
 
@@ -100,12 +100,8 @@ public class PickSlipsResource extends Resource {
       .thenComposeAsync(r -> r.after(servicePointRepository::findServicePointsForRequests))
 
       .thenApply(flatMapResult(this::mapResultToJson))
-      .thenComposeAsync(a -> a.combineAfter(() -> servicePointRepository.getServicePointById(servicePointId), (entries, servicePoint) -> {
-        entries.getJsonArray(PICK_SLIPS_KEY).stream().forEach(pickSlip -> {
-          ((JsonObject)pickSlip).getJsonObject(ITEM_KEY).put("fromServicePoint", servicePoint.getName());
-        });
-        return entries;
-      }))
+      .thenComposeAsync(a -> a.combineAfter(() -> servicePointRepository.getServicePointById(servicePointId),
+        (entries, servicePoint) -> TemplateContextUtil.addPrimaryServicePointNameToStaffSlipContext(entries, servicePoint.getName())))
       .thenApply(r -> r.map(JsonHttpResponse::ok))
       .thenAccept(context::writeResultToHttpResponse);
   }
@@ -217,6 +213,5 @@ public class PickSlipsResource extends Resource {
 
     return succeeded(jsonRepresentations);
   }
-
 
 }
