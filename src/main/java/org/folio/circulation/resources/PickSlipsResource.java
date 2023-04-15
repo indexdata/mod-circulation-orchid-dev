@@ -59,7 +59,7 @@ public class PickSlipsResource extends Resource {
   private static final String SERVICE_POINT_ID_PARAM = "servicePointId";
   private static final String EFFECTIVE_LOCATION_ID_KEY = "effectiveLocationId";
   private static final String PRIMARY_SERVICE_POINT_KEY = "primaryServicePoint";
-  private static final String REQUEST_KEY = "request";
+  private static final String ITEM_KEY = "item";
 
   private static final PageLimit LOCATIONS_LIMIT = PageLimit.oneThousand();
 
@@ -102,7 +102,7 @@ public class PickSlipsResource extends Resource {
       .thenApply(flatMapResult(this::mapResultToJson))
       .thenComposeAsync(a -> a.combineAfter(() -> servicePointRepository.getServicePointById(servicePointId), (entries, servicePoint) -> {
         entries.getJsonArray(PICK_SLIPS_KEY).stream().forEach(pickSlip -> {
-          ((JsonObject)pickSlip).getJsonObject(REQUEST_KEY).put("primaryServicePointName", servicePoint.getName());
+          ((JsonObject)pickSlip).getJsonObject(ITEM_KEY).put("fromServicePoint", servicePoint.getName());
         });
         return entries;
       }))
