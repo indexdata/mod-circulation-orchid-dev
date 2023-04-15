@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.folio.circulation.domain.*;
@@ -61,7 +63,6 @@ public class PickSlipsResource extends Resource {
   private static final PageLimit LOCATIONS_LIMIT = PageLimit.oneThousand();
 
   private final String rootPath;
-  private String name;
 
 
   public PickSlipsResource(String rootPath, HttpClient client) {
@@ -87,10 +88,9 @@ public class PickSlipsResource extends Resource {
     final PatronGroupRepository patronGroupRepository = new PatronGroupRepository(clients);
     final UUID servicePointId = UUID.fromString(
       routingContext.request().getParam(SERVICE_POINT_ID_PARAM));
-    try {
-      name = servicePointRepository.getServicePointById(servicePointId).get().orElse(null).getName();
-    } catch (Exception e) {}
 
+
+    Supplier<CompletableFuture<Result<ServicePoint>>> s = () -> servicePointRepository.getServicePointById(servicePointId);
     fetchLocationsForServicePoint(servicePointId, clients)
       .thenComposeAsync(r -> r.after(locations -> fetchPagedItemsForLocations(locations,
         itemRepository, LocationRepository.using(clients, servicePointRepository))))
@@ -99,7 +99,12 @@ public class PickSlipsResource extends Resource {
       .thenComposeAsync(result -> result.after(patronGroupRepository::findPatronGroupsForRequestsUsers))
       .thenComposeAsync(r -> r.after(addressTypeRepository::findAddressTypesForRequests))
       .thenComposeAsync(r -> r.after(servicePointRepository::findServicePointsForRequests))
+
       .thenApply(flatMapResult(this::mapResultToJson))
+      .thenComposeAsync(a -> a.combineAfter(s, (entries, servicePoint) -> {
+        entries.put("primaryServicePointName", servicePoint.getName());
+        return entries;
+      }))
       .thenApply(r -> r.map(JsonHttpResponse::ok))
       .thenAccept(context::writeResultToHttpResponse);
   }
@@ -207,7 +212,6 @@ public class PickSlipsResource extends Resource {
       .collect(Collectors.toList());
     JsonObject jsonRepresentations = new JsonObject()
       .put(PICK_SLIPS_KEY, representations)
-      .put("name", name)
       .put(TOTAL_RECORDS_KEY, representations.size());
 
     return succeeded(jsonRepresentations);
