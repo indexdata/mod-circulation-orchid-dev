@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Department;
 import org.folio.circulation.domain.MultipleRecords;
+import org.folio.circulation.domain.Request;
 import org.folio.circulation.support.Clients;
 import org.folio.circulation.support.CollectionResourceClient;
 import org.folio.circulation.support.http.client.CqlQuery;
@@ -15,7 +16,10 @@ import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -29,11 +33,45 @@ public class DepartmentRepository {
   }
 
   public List<Department> getDepartmentByIds(List<String> departmentIds) {
-    log.debug("getDepartmentByIds:: Fetching departmentByIds {}", departmentIds);
+    log.info("getDepartmentByIds:: Fetching departmentByIds {}", departmentIds);
     return findDepartmentList(departmentIds).stream()
       .map(Result::value)
       .map(rec -> new ArrayList<>(rec.getRecords()))
       .flatMap(Collection::stream)
+      .collect(Collectors.toList());
+  }
+
+  public CompletableFuture<Result<MultipleRecords<Request>>> findDepartmentsForRequests(
+    MultipleRecords<Request> multipleRequests) {
+    log.info("findDepartmentsForRequests:: Fetching departments for multipleRequests {} ", multipleRequests.getTotalRecords());
+    Map<String, Department> departmentMap =
+      fetchDepartmentsForRequest(multipleRequests.getRecords()).stream()
+        .collect(Collectors.toMap(Department::getId, Function.identity(), (x1,x2) -> x1));
+    log.info("departmentMap {} ", departmentMap);
+    return CompletableFuture.completedFuture(Result.succeeded(multipleRequests.mapRecords
+      (req -> req.withDepartments(matchDepartmentsWithRequest(req, departmentMap)))));
+  }
+
+  private List<Department> fetchDepartmentsForRequest(Collection<Request> requests){
+    List<String> departmentIds = requests.stream()
+      .filter(req -> req.getRequester() != null)
+      .map(req -> req.getRequester().getDepartments())
+      .map(String.class::cast)
+      .distinct()
+      .collect(Collectors.toList());
+    return getDepartmentByIds(departmentIds);
+  }
+
+  private List<Department> matchDepartmentsWithRequest(Request request, Map<String, Department> departmentMap) {
+    if (request.getRequester() == null || request.getRequester().getDepartments() == null) {
+      return null;
+    }
+    return request.getRequester().getDepartments()
+      .stream()
+      .map(String.class::cast)
+      .collect(Collectors.toList())
+      .stream().map(departmentMap::get)
+      .filter(Objects::nonNull)
       .collect(Collectors.toList());
   }
 
