@@ -52,13 +52,15 @@ public class DepartmentRepository {
       (req -> req.withDepartments(matchDepartmentsWithRequest(req, departmentMap)))));
   }
 
-  private List<Department> fetchDepartmentsForRequest(Collection<Request> requests){
+  private List<Department> fetchDepartmentsForRequest(Collection<Request> requests) {
     List<String> departmentIds = requests.stream()
       .filter(req -> req.getRequester() != null)
-      .map(req -> req.getRequester().getDepartments())
-      .map(String.class::cast)
-      .distinct()
+      .map(req -> req.getRequester().getDepartments().stream()
+        .map(String.class::cast)
+        .collect(Collectors.toList()))
+      .flatMap(List::stream)
       .collect(Collectors.toList());
+    log.info("fetchDepartmentsForRequest :: departmentIds {} ", departmentIds);
     return getDepartmentByIds(departmentIds);
   }
 
