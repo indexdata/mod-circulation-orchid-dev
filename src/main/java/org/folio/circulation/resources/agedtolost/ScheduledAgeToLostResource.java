@@ -2,6 +2,8 @@ package org.folio.circulation.resources.agedtolost;
 
 import static org.folio.circulation.support.results.MappingFunctions.toFixedValue;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.infrastructure.storage.inventory.ItemRepository;
 import org.folio.circulation.infrastructure.storage.loans.LoanRepository;
 import org.folio.circulation.infrastructure.storage.users.UserRepository;
@@ -16,7 +18,10 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
+import java.lang.invoke.MethodHandles;
+
 public class ScheduledAgeToLostResource extends Resource {
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   public ScheduledAgeToLostResource(HttpClient client) {
     super(client);
   }
@@ -28,6 +33,7 @@ public class ScheduledAgeToLostResource extends Resource {
   }
 
   private void scheduledAgeToLost(RoutingContext routingContext) {
+    log.info("Inside scheduledAgeToLost...");
     final WebContext context = new WebContext(routingContext);
     final var clients = Clients.create(context, client);
 

@@ -264,6 +264,7 @@ public class EventPublisher {
   }
 
   public CompletableFuture<Result<Void>> publishClosedLoanEvent(Loan loan) {
+    logger.info("Inside publish closed loan event {} ", LoanLogContext.from(loan).asJson());
     if (!CHECKED_IN.getValue().equalsIgnoreCase(loan.getAction())) {
       return publishLogRecord(LoanLogContext.from(loan)
         .withServicePointId(loan.getCheckoutServicePointId()).asJson(), LOAN);

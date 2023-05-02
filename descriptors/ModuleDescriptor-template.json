@@ -659,7 +659,7 @@
             "pubsub.publish.post"
           ],
           "unit": "minute",
-          "delay": "20"
+          "delay": "2"
         },
         {
           "methods": [
@@ -834,7 +834,7 @@
             "scheduled-notice-storage.scheduled-notices.item.post"
           ],
           "unit": "minute",
-          "delay": "30"
+          "delay": "2"
         },
         {
           "methods": [
@@ -866,7 +866,7 @@
             "actual-cost-record-storage.actual-cost-records.item.post"
           ],
           "unit": "minute",
-          "delay": "35"
+          "delay": "3"
         }
       ]
     },

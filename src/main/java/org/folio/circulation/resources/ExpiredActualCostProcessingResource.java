@@ -3,6 +3,8 @@ package org.folio.circulation.resources;
 import static org.folio.circulation.support.Clients.create;
 import static org.folio.circulation.support.results.MappingFunctions.toFixedValue;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.infrastructure.storage.ActualCostRecordRepository;
 import org.folio.circulation.infrastructure.storage.feesandfines.AccountRepository;
 import org.folio.circulation.infrastructure.storage.inventory.ItemRepository;
@@ -20,7 +22,11 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
+import java.lang.invoke.MethodHandles;
+
 public class ExpiredActualCostProcessingResource extends Resource {
+
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
   public ExpiredActualCostProcessingResource(HttpClient client) {
     super(client);
   }
@@ -32,6 +38,7 @@ public class ExpiredActualCostProcessingResource extends Resource {
   }
 
   private void process(RoutingContext routingContext) {
+    log.info("Inside expired actual cost processing resource");
     var context = new WebContext(routingContext);
     var clients = create(context, client);
 

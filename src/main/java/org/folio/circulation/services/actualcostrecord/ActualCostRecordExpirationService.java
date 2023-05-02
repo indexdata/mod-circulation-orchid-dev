@@ -57,7 +57,12 @@ public class ActualCostRecordExpirationService {
       return emptyAsync();
     }
 
-    log.info("Processing {} expired actual cost records", records.size());
+    log.info("Processing expired actual cost records {}", records.size());
+    for (ActualCostRecord record : records) {
+      log.info("record id {} ",record.getId());
+      log.info("Item barcode {} ",record.getItem().getBarcode());
+      log.info("User barcode {} ",record.getUser().getBarcode());
+    }
 
     List<ActualCostRecord> expiredRecords = records.stream()
       .map(rec -> rec.withStatus(EXPIRED))
