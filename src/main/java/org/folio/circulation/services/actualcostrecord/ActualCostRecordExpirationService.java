@@ -65,7 +65,7 @@ public class ActualCostRecordExpirationService {
     }
 
     List<ActualCostRecord> expiredRecords = records.stream()
-     // .map(rec -> rec.withStatus(EXPIRED))
+      .map(rec -> rec.withStatus(EXPIRED))
       .collect(toList());
 
     return actualCostRecordRepository.update(expiredRecords)
