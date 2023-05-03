@@ -47,12 +47,6 @@
       "description": "Created log record event",
       "eventTTL": 1,
       "signed": false
-    },
-    {
-      "eventType": "ITEM_EXPIRED",
-      "description": "Aged to Lost Item expired",
-      "eventTTL": 1,
-      "signed": false
     }
   ],
   "subscriptions": [

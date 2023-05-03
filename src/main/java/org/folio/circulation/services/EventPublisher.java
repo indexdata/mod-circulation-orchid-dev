@@ -217,7 +217,7 @@ public class EventPublisher {
     write(payload, "status", actualCostRecord.getStatus().getValue());
     write(payload, "action", "Actual Cost(Expired)");
 
-    return pubSubPublishingService.publishEvent(ITEM_EXPIRED.name(), payload.encode())
+    return pubSubPublishingService.publishEvent(LOG_RECORD.name(), payload.encode())
       .handle((result, error) -> handlePublishEventError(error, null));
   }
 
