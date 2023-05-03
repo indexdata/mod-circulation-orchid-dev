@@ -201,7 +201,7 @@ public class EventPublisher {
     logger.info("Inside publishExpiredRecords {}", actualCostRecords);
     String eventName = ITEM_EXPIRED.name();
 
-    if(actualCostRecords == null || !actualCostRecords.isEmpty()) {
+    if(actualCostRecords == null || actualCostRecords.isEmpty()) {
       logger.error(FAILED_TO_PUBLISH_LOG_TEMPLATE, eventName);
       return ofAsync(() -> null);
     }
