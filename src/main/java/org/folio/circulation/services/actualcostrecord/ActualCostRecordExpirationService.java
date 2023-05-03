@@ -23,6 +23,7 @@ import org.folio.circulation.infrastructure.storage.ActualCostRecordRepository;
 import org.folio.circulation.infrastructure.storage.inventory.ItemRepository;
 import org.folio.circulation.infrastructure.storage.loans.LoanRepository;
 import org.folio.circulation.services.CloseLoanWithLostItemService;
+import org.folio.circulation.services.EventPublisher;
 import org.folio.circulation.support.results.Result;
 
 public class ActualCostRecordExpirationService {
@@ -33,14 +34,17 @@ public class ActualCostRecordExpirationService {
   private final ActualCostRecordRepository actualCostRecordRepository;
   private final LoanRepository loanRepository;
 
+  private final EventPublisher eventPublisher;
+
   public ActualCostRecordExpirationService(
     CloseLoanWithLostItemService closeLoanWithLostItemService, ItemRepository itemRepository,
-    ActualCostRecordRepository actualCostRecordRepository, LoanRepository loanRepository) {
+    ActualCostRecordRepository actualCostRecordRepository, LoanRepository loanRepository, EventPublisher eventPublisher) {
 
     this.itemRepository = itemRepository;
     this.closeLoanWithLostItemService = closeLoanWithLostItemService;
     this.actualCostRecordRepository = actualCostRecordRepository;
     this.loanRepository = loanRepository;
+    this.eventPublisher = eventPublisher;
   }
 
   public CompletableFuture<Result<Void>> expireActualCostRecords() {
@@ -69,6 +73,7 @@ public class ActualCostRecordExpirationService {
       .collect(toList());
 
     return actualCostRecordRepository.update(expiredRecords)
+      .thenComposeAsync(r -> r.after(eventPublisher::publishExpiredRecords))
       .thenCompose(r -> r.after(this::fetchLoansForExpiredRecords))
       .thenCompose(r -> r.after(this::closeLoans));
   }

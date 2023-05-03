@@ -10,6 +10,7 @@ import static org.folio.circulation.domain.EventType.ITEM_CHECKED_IN;
 import static org.folio.circulation.domain.EventType.ITEM_CHECKED_OUT;
 import static org.folio.circulation.domain.EventType.ITEM_CLAIMED_RETURNED;
 import static org.folio.circulation.domain.EventType.ITEM_DECLARED_LOST;
+import static org.folio.circulation.domain.EventType.ITEM_EXPIRED;
 import static org.folio.circulation.domain.EventType.LOAN_CLOSED;
 import static org.folio.circulation.domain.EventType.LOAN_DUE_DATE_CHANGED;
 import static org.folio.circulation.domain.EventType.LOG_RECORD;
@@ -33,10 +34,12 @@ import static org.folio.circulation.support.results.Result.succeeded;
 import static org.folio.circulation.support.utils.ClockUtil.getZonedDateTime;
 import static org.folio.circulation.support.utils.DateFormatUtil.formatDateTimeOptional;
 
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.circulation.domain.ActualCostRecord;
 import org.folio.circulation.domain.CheckInContext;
 import org.folio.circulation.domain.EventType;
 import org.folio.circulation.domain.Loan;
@@ -192,6 +195,30 @@ public class EventPublisher {
 
     return pubSubPublishingService.publishEvent(eventName, payload.encode())
       .handle((result, error) -> handlePublishEventError(error, loan));
+  }
+
+  public CompletableFuture<Result<Collection<ActualCostRecord>>> publishExpiredRecords(Collection<ActualCostRecord> actualCostRecords) {
+    logger.info("Inside publishExpiredRecords {}", actualCostRecords);
+    String eventName = ITEM_EXPIRED.name();
+
+    if(actualCostRecords == null || !actualCostRecords.isEmpty()) {
+      logger.error(FAILED_TO_PUBLISH_LOG_TEMPLATE, eventName);
+      return ofAsync(() -> null);
+    }
+
+   return allOf(actualCostRecords, this::publishExpiredRecord)
+      .thenApply(r -> succeeded(actualCostRecords));
+  }
+
+  private CompletableFuture<Result<Void>> publishExpiredRecord(ActualCostRecord actualCostRecord) {
+    logger.info("Inside publishExpiredRecord {}", actualCostRecord);
+    JsonObject payload = new JsonObject();
+    write(payload, "ItemId", actualCostRecord.getItem().getBarcode());
+    write(payload, "status", actualCostRecord.getStatus().getValue());
+    write(payload, "action", "Actual Cost(Expired)");
+
+    return pubSubPublishingService.publishEvent(ITEM_EXPIRED.name(), payload.encode())
+      .handle((result, error) -> handlePublishEventError(error, null));
   }
 
   private CompletableFuture<Result<Loan>> publishDueDateChangedEvent(Loan loan, RequestAndRelatedRecords records) {

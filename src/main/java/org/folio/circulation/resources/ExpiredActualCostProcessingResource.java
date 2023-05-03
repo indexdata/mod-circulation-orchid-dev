@@ -54,7 +54,7 @@ public class ExpiredActualCostProcessingResource extends Resource {
       eventPublisher, actualCostRecordRepository);
     var actualCostRecordExpirationService = new ActualCostRecordExpirationService(
       closeLoanWithLostItemService, itemRepository, actualCostRecordRepository,
-      loanRepository);
+      loanRepository, eventPublisher);
 
     actualCostRecordExpirationService.expireActualCostRecords()
       .thenApply(r -> r.map(toFixedValue(NoContentResponse::noContent)))
