@@ -12,7 +12,7 @@ public enum LogEventType {
   REQUEST_UPDATED("REQUEST_UPDATED_EVENT"),
   REQUEST_MOVED("REQUEST_MOVED_EVENT"),
   REQUEST_REORDERED("REQUEST_REORDERED_EVENT"),
-  EXPIRED("Actual Cost(Expired)");
+  FEE_FINE("FEE_FINE");
 
   private final String value;
 
