@@ -22,6 +22,7 @@ import static org.folio.circulation.domain.representations.logs.CirculationCheck
 import static org.folio.circulation.domain.representations.logs.CirculationCheckInCheckOutLogEventMapper.mapToCheckOutLogEventContent;
 import static org.folio.circulation.domain.representations.logs.LogEventPayloadField.LOG_EVENT_TYPE;
 import static org.folio.circulation.domain.representations.logs.LogEventPayloadField.PAYLOAD;
+import static org.folio.circulation.domain.representations.logs.LogEventType.EXPIRED;
 import static org.folio.circulation.domain.representations.logs.LogEventType.LOAN;
 import static org.folio.circulation.domain.representations.logs.LogEventType.NOTICE;
 import static org.folio.circulation.domain.representations.logs.LogEventType.NOTICE_ERROR;
@@ -216,9 +217,7 @@ public class EventPublisher {
     write(payload, "ItemId", actualCostRecord.getItem().getBarcode());
     write(payload, "status", actualCostRecord.getStatus().getValue());
     write(payload, "action", "Actual Cost(Expired)");
-
-    return pubSubPublishingService.publishEvent(LOG_RECORD.name(), payload.encode())
-      .handle((result, error) -> handlePublishEventError(error, null));
+    return publishLogRecord(payload, EXPIRED);
   }
 
   private CompletableFuture<Result<Loan>> publishDueDateChangedEvent(Loan loan, RequestAndRelatedRecords records) {
