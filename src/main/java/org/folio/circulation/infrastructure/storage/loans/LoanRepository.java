@@ -124,8 +124,9 @@ public class LoanRepository implements GetManyRecordsRepository<Loan> {
     JsonObject storageLoan = mapToStorageRepresentation(loan, loan.getItem());
 
     return loansStorageClient.put(loan.getId(), storageLoan)
-      .thenApply(noContentRecordInterpreter(loan)::flatMap)
-      .thenComposeAsync(r -> r.after(this::refreshLoanRepresentation));
+//      .thenApply(noContentRecordInterpreter(loan)::flatMap)
+//      .thenComposeAsync(r -> r.after(this::refreshLoanRepresentation));
+      .thenApply(r -> r.next(l -> succeeded(loan)));
   }
 
   /**
