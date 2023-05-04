@@ -219,6 +219,7 @@ public class EventPublisher {
     write(payload, "userId", actualCostRecord.getUser().getId());
     write(payload, "status", actualCostRecord.getStatus().getValue());
     write(payload, "action", "Actual Cost Expired");
+    write(payload, "date", getZonedDateTime());
     return publishLogRecord(payload, FEE_FINE);
   }
 
