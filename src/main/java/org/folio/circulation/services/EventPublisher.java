@@ -214,9 +214,11 @@ public class EventPublisher {
   private CompletableFuture<Result<Void>> publishExpiredRecord(ActualCostRecord actualCostRecord) {
     logger.info("Inside publishExpiredRecord {}", actualCostRecord);
     JsonObject payload = new JsonObject();
-    write(payload, "ItemId", actualCostRecord.getItem().getBarcode());
+    write(payload, "itemBarcode", actualCostRecord.getItem().getBarcode());
+    write(payload, "itemId", actualCostRecord.getItem().getId());
+    write(payload, "userId", actualCostRecord.getUser().getId());
     write(payload, "status", actualCostRecord.getStatus().getValue());
-    write(payload, "action", "Actual Cost(Expired)");
+    write(payload, "action", "Actual Cost Expired");
     return publishLogRecord(payload, FEE_FINE);
   }
 
