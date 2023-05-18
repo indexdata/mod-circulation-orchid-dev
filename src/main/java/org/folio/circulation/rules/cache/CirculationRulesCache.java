@@ -20,20 +20,20 @@ import org.folio.circulation.support.CollectionResourceClient;
 import org.folio.circulation.support.ServerErrorFailure;
 import org.folio.circulation.support.results.Result;
 
-
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
 public final class CirculationRulesCache {
   private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
-
+  private final Vertx vertx = Vertx.vertx();
   private static final CirculationRulesCache instance = new CirculationRulesCache();
   /** after this time the rules get loaded before executing the circulation rules engine */
-  private static final long MAX_AGE_IN_MILLISECONDS = 5000;
+  private static final long MAX_AGE_IN_MILLISECONDS = 30000;
   /** after this time the circulation rules engine is executed first for a fast reply
    * and then the circulation rules get reloaded */
-  private static final long TRIGGER_AGE_IN_MILLISECONDS = 4000;
+  private static final long TRIGGER_AGE_IN_MILLISECONDS = 20000;
   /** after this time the Drools object will be rebuilt even if rulesAsText has not changed */
-  private static final long DROOLS_OBJECT_LIFETIME_IN_MILLISECONDS = 30000;
+  private static final long DROOLS_OBJECT_LIFETIME_IN_MILLISECONDS = 100000;
   /** rules and Drools for each tenantId */
   private final Map<String, Rules> rulesMap = new ConcurrentHashMap<>();
 
@@ -122,7 +122,7 @@ public final class CirculationRulesCache {
         rules.reloadInitiated = false;
 
         if (log.isInfoEnabled()) {
-          log.info("circulationRules = {}", circulationRules.encodePrettily());
+          //log.info("circulationRules = {}", circulationRules.encodePrettily());
         }
 
         String rulesAsText = circulationRules.getString("rulesAsText");
@@ -138,17 +138,25 @@ public final class CirculationRulesCache {
             tenantId);
           return ofAsync(() -> rules);
         }
+        //rules parsing can cause delays if performed synchronously
+        CompletableFuture<Result<Rules>> rulesFuture  = new CompletableFuture<>();
+        vertx.executeBlocking(future -> {
+          
+          rules.rulesAsText = rulesAsText;
 
-        rules.rulesAsText = rulesAsText;
+          rules.rulesAsDrools = Text2Drools.convert(rulesAsText);
+          log.info("rulesAsDrools = {}", rules.rulesAsDrools);
 
-        rules.rulesAsDrools = Text2Drools.convert(rulesAsText);
-        log.info("rulesAsDrools = {}", rules.rulesAsDrools);
+          rules.drools = new Drools(tenantId, rules.rulesAsDrools);
+          rules.rebuildTimestamp = System.currentTimeMillis();
+          log.info("Done building Drools object for tenant {}", tenantId);
+          future.complete(rules);
+        }).onComplete(res -> {
+          Rules myRules = (Rules) res.result();
+          rulesFuture.complete(succeeded(myRules));
+        });
 
-        rules.drools = new Drools(tenantId, rules.rulesAsDrools);
-        rules.rebuildTimestamp = System.currentTimeMillis();
-        log.info("Done building Drools object for tenant {}", tenantId);
-
-        return ofAsync(() -> rules);
+        return rulesFuture;
       }));
   }
 
