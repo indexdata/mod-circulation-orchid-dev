@@ -960,6 +960,40 @@
           ],
           "unit": "minute",
           "delay": "35"
+        },
+        {
+          "methods": [
+            "POST"
+          ],
+          "modulePermissions": [
+            "circulation-storage.loans.item.put",
+            "circulation-storage.loans.item.get",
+            "circulation-storage.loans.collection.get",
+            "inventory-storage.items.item.put",
+            "circulation.internal.fetch-items",
+            "lost-item-fees-policies.item.get",
+            "lost-item-fees-policies.collection.get",
+            "owners.collection.get",
+            "feefines.collection.get",
+            "accounts.item.post",
+            "feefineactions.item.post",
+            "pubsub.publish.post",
+            "users.item.get",
+            "users.collection.get",
+            "usergroups.collection.get",
+            "usergroups.item.get",
+            "circulation-storage.circulation-rules.get",
+            "circulation-storage.patron-notice-policies.item.get",
+            "circulation-storage.patron-notice-policies.collection.get",
+            "circulation.rules.notice-policy.get",
+            "scheduled-notice-storage.scheduled-notices.item.post",
+            "actual-cost-record-storage.actual-cost-records.item.post",
+            "overdue-fines-policies.item.get",
+            "overdue-fines-policies.collection.get"
+          ],
+          "pathPattern": "/circulation/scheduled-overdue-reminders",
+          "unit": "minute",
+          "delay": "2"
         }
       ]
     },

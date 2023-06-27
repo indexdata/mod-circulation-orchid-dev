@@ -1,0 +1,20 @@
+#%RAML 1.0
+title: Background processing of overdue reminders and reminder fees
+version: v0.1
+protocols: [ HTTP, HTTPS ]
+baseUri: http://localhost:9130
+
+documentation:
+  - title: Background processes for creating and reminders and charging reminder fees.
+    content: <b>Background processes for creating and reminders and charging reminder fees</b>
+
+/circulation/scheduled-overdue-reminders:
+  post:
+    responses:
+      204:
+        description: "The process completed successfully"
+      500:
+        description: "Internal server error, e.g. due to misconfiguration"
+        body:
+          text/plain:
+            example: "Internal server error, contact administrator"

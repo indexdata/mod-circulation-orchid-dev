@@ -42,6 +42,7 @@ import org.folio.circulation.resources.agedtolost.ScheduledAgeToLostFeeChargingR
 import org.folio.circulation.resources.agedtolost.ScheduledAgeToLostResource;
 import org.folio.circulation.resources.handlers.FeeFineBalanceChangedHandlerResource;
 import org.folio.circulation.resources.handlers.LoanRelatedFeeFineClosedHandlerResource;
+import org.folio.circulation.resources.reminders.ScheduledOverdueRemindersResource;
 import org.folio.circulation.resources.renewal.RenewByBarcodeResource;
 import org.folio.circulation.resources.renewal.RenewByIdResource;
 import org.folio.circulation.support.logging.LogHelper;
@@ -140,6 +141,7 @@ public class CirculationVerticle extends AbstractVerticle {
     new ScheduledAgeToLostResource(client).register(router);
     new ScheduledAgeToLostFeeChargingResource(client).register(router);
     new ExpiredActualCostProcessingResource(client).register(router);
+    new ScheduledOverdueRemindersResource(client).register(router);
 
     // Handlers
     new LoanRelatedFeeFineClosedHandlerResource(client).register(router);
