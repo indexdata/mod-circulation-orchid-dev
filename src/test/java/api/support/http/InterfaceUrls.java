@@ -210,6 +210,10 @@ public class InterfaceUrls {
     return circulationRulesUrl("");
   }
 
+  public static URL circulationRulesReloadUrl(String subPath) {
+    return circulationModuleUrl("/circulation/rules-reload" + subPath);
+  }
+
   public static URL circulationRulesUrl(String subPath) {
     return circulationModuleUrl("/circulation/rules" + subPath);
   }
@@ -312,4 +316,13 @@ public class InterfaceUrls {
   public static URL departmentsStorageUrl() {
     return APITestContext.viaOkapiModuleUrl("/departments" );
   }
+
+  public static URL checkOutLockStorageUrl() {
+    return APITestContext.viaOkapiModuleUrl("/check-out-lock-storage");
+  }
+
+  public static URL settingsStorageUrl() {
+    return APITestContext.viaOkapiModuleUrl("/settings/entries");
+  }
+
 }
