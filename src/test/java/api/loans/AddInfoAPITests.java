@@ -49,7 +49,6 @@ class AddInfoAPITests extends APITests {
     assertThatPublishedLoanLogRecordEventsAreValid(loansClient.getById(loan.getId()).getJson());
   }
 
-
   private void assertLoanAndItem(Response response, String action, String comment ) {
     JsonObject actualLoan = loansClient.getById(UUID.fromString(loanId)).getJson();
     JsonObject actualItem = actualLoan.getJsonObject("item");
