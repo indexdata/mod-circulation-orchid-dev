@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy: 
       matrix: 
-        distribution: [ 'zulu', 'oracle', 'temurin' ]
+        distribution: [ 'oracle' ]
         java: [ '17' ]
     name:  Java ${{ matrix.Java }} (${{ matrix.distribution }}) sample 
     steps:
