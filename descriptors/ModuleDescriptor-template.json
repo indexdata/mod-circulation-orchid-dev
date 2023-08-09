@@ -962,6 +962,10 @@
           "delay": "35"
         },
         {
+          "pathPattern": "/circulation/scheduled-overdue-reminders",
+          "schedule": {
+            "cron": "1 0 * * *"
+          },
           "methods": [
             "POST"
           ],
@@ -990,10 +994,7 @@
             "actual-cost-record-storage.actual-cost-records.item.post",
             "overdue-fines-policies.item.get",
             "overdue-fines-policies.collection.get"
-          ],
-          "pathPattern": "/circulation/scheduled-overdue-reminders",
-          "unit": "minute",
-          "delay": "2"
+          ]
         }
       ]
     },
