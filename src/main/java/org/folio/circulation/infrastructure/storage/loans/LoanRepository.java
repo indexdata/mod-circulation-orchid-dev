@@ -49,6 +49,7 @@ import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Account;
 import org.folio.circulation.domain.Item;
 import org.folio.circulation.domain.Loan;
+import org.folio.circulation.domain.LoanAction;
 import org.folio.circulation.domain.LoanAndRelatedRecords;
 import org.folio.circulation.domain.LoanHistory;
 import org.folio.circulation.domain.MultipleRecords;
@@ -211,6 +212,10 @@ public class LoanRepository implements GetManyRecordsRepository<Loan> {
 
   public CompletableFuture<Result<Loan>> fetchLatestPatronInfoAddedComment(Loan loan){
     log.debug("fetchLatestPatronInfoAddedComment:: parameters loan: {}", () -> loan);
+    if(LoanAction.PATRON_INFO_ADDED.getValue().equals(loan.getAction())){
+      // If latest action is patron info then we don't need to check history
+      return CompletableFuture.completedFuture(Result.succeeded(loan.withLatestPatronInfoAddedComment(loan.getActionComment())));
+    }
     return loanHistoryRepository.getLatestPatronInfoAdded(loan)
       .thenApply(r -> r.map(records -> loan.withLatestPatronInfoAddedComment(mapToLatestPatronInfoAddedComment(records))));
   }
