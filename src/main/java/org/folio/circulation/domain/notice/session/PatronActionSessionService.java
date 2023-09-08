@@ -59,7 +59,7 @@ public class PatronActionSessionService {
   protected final EventPublisher eventPublisher;
 
   public static PatronActionSessionService using(Clients clients,
-                                                 PatronActionSessionRepository patronActionSessionRepository, LoanRepository loanRepository) {
+    PatronActionSessionRepository patronActionSessionRepository, LoanRepository loanRepository) {
 
     return new PatronActionSessionService(patronActionSessionRepository,
       new ImmediatePatronNoticeService(clients, new LoanNoticeContextCombiner()),
@@ -89,7 +89,7 @@ public class PatronActionSessionService {
     UUID patronId = UUID.fromString(loan.getUserId());
     UUID loanId = UUID.fromString(loan.getId());
     PatronSessionRecord patronSessionRecord = new PatronSessionRecord(UUID.randomUUID(),
-      patronId, loanId, context.getSessionId(), PatronActionType.CHECK_IN);
+        patronId, loanId, context.getSessionId(), PatronActionType.CHECK_IN);
 
     return patronActionSessionRepository.create(patronSessionRecord)
       .thenApply(mapResult(v -> context));
@@ -109,7 +109,7 @@ public class PatronActionSessionService {
   }
 
   private CompletableFuture<Result<List<PatronSessionRecord>>> findSessions(String patronId,
-                                                                            PatronActionType actionType) {
+    PatronActionType actionType) {
 
     return patronActionSessionRepository.findPatronActionSessions(patronId, actionType,
       DEFAULT_SESSION_SIZE_PAGE_LIMIT);
@@ -198,11 +198,15 @@ public class PatronActionSessionService {
 
   private CompletableFuture<Result<List<PatronSessionRecord>>> fetchLatestPatronInfoAddedComment(
     List<PatronSessionRecord> sessions) {
-    List<CompletableFuture<Result<Loan>>> futures = new ArrayList<>();
-    sessions.forEach(s -> futures.add(loanRepository.fetchLatestPatronInfoAddedComment(s.getLoan())));
+    List<CompletableFuture<PatronSessionRecord>> futures = new ArrayList<>();
+
+    sessions.forEach(s -> futures.add(loanRepository.fetchLatestPatronInfoAddedComment(s.getLoan())
+      .thenApply(r -> s.withLoan(r.value()))));
 
     return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-      .thenApply(v -> succeeded(sessions));
+      .thenApply(v -> succeeded(futures.stream()
+        .map(CompletableFuture::join)
+        .collect(Collectors.toList())));
   }
 
   private CompletableFuture<Result<Void>> publishNoticeErrorEvent(
