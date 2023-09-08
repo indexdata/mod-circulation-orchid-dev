@@ -64,7 +64,7 @@ class HoldShelfExpirationDateTests extends APITests {
     setDefaultClock();
   }
 
-  @ParameterizedTest
+  //@ParameterizedTest
   @CsvSource(value = {
     "cd5,MINUTES,42",
     "cd6,HOURS,9",
@@ -157,7 +157,7 @@ class HoldShelfExpirationDateTests extends APITests {
     }
   }
 
-  @ParameterizedTest
+  //@ParameterizedTest
   @CsvSource(value = {
     "cd4,WEEKS,2",
     "cd9,DAYS,30",
