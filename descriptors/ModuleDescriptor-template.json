@@ -1034,6 +1034,7 @@
             "configuration.entries.collection.get",
             "patron-notice.post",
             "users.item.get",
+            "addresstypes.item.get",
             "templates.item.get",
             "pubsub.publish.post",
             "circulation-storage.circulation-rules.get",
