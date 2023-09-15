@@ -41,6 +41,7 @@ import org.folio.circulation.resources.ScheduledAnonymizationProcessingResource;
 import org.folio.circulation.resources.TenantActivationResource;
 import org.folio.circulation.resources.agedtolost.ScheduledAgeToLostFeeChargingResource;
 import org.folio.circulation.resources.agedtolost.ScheduledAgeToLostResource;
+import org.folio.circulation.resources.PermissionChangeTest;
 import org.folio.circulation.resources.handlers.FeeFineBalanceChangedHandlerResource;
 import org.folio.circulation.resources.handlers.LoanRelatedFeeFineClosedHandlerResource;
 import org.folio.circulation.resources.renewal.RenewByBarcodeResource;
@@ -78,6 +79,8 @@ public class CirculationVerticle extends AbstractVerticle {
 
     new HealthResource().register(router);
     new TenantActivationResource().register(router);
+
+    new PermissionChangeTest(client).register(router);
 
     new CheckOutByBarcodeResource("/circulation/check-out-by-barcode", client).register(router);
     new CheckInByBarcodeResource(client).register(router);
