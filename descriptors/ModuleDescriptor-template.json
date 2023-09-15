@@ -681,7 +681,7 @@
           ],
           "pathPattern": "/circulation/test-permission-change-for-timed-process",
           "modulePermissions": [
-            "addresstypes.collection.get.disabled"
+            "addresstypes.collection.get"
           ],
           "unit": "minute",
           "delay": "1"
