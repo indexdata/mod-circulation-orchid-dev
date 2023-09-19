@@ -679,17 +679,6 @@
           "methods": [
             "POST"
           ],
-          "pathPattern": "/circulation/test-permission-change-for-timed-process",
-          "modulePermissions": [
-            "addresstypes.collection.get"
-          ],
-          "unit": "minute",
-          "delay": "1"
-        },
-        {
-          "methods": [
-            "POST"
-          ],
           "pathPattern": "/circulation/notice-session-expiration-by-timeout",
           "modulePermissions": [
             "patron-action-session-storage.expired-session-patron-ids.collection.get",
