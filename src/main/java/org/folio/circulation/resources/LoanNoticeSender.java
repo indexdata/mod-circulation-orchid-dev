@@ -73,7 +73,8 @@ public class LoanNoticeSender {
       .next(this::validateLoan)
       .next(l -> loanRepository.fetchLatestPatronInfoAddedComment(l).join())
       .mapFailure(failure -> publishNoticeErrorEvent(failure, loan, eventType))
-      .after(l -> sendNotice(loan, eventType));
+      .next(l -> loanRepository.fetchLatestPatronInfoAddedComment(l).join())
+      .after(l -> sendNotice(l, eventType));
   }
 
   private Result<Loan> validateLoan(Loan loan) {

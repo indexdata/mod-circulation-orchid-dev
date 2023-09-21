@@ -878,8 +878,7 @@
             "users.collection.get",
             "addresstypes.collection.get",
             "pubsub.publish.post",
-            "templates.item.get",
-            "circulation-storage.loans-history.collection.get"
+            "templates.item.get"
           ],
           "unit": "minute",
           "delay": "2"
