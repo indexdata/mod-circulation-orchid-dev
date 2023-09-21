@@ -32,6 +32,7 @@ import org.folio.circulation.domain.notice.PatronNoticeEvent;
 import org.folio.circulation.domain.notice.PatronNoticeEventBuilder;
 import org.folio.circulation.domain.notice.combiner.LoanNoticeContextCombiner;
 import org.folio.circulation.domain.representations.logs.NoticeLogContext;
+import org.folio.circulation.infrastructure.storage.loans.LoanRepository;
 import org.folio.circulation.infrastructure.storage.sessions.PatronActionSessionRepository;
 import org.folio.circulation.services.EventPublisher;
 import org.folio.circulation.support.Clients;
@@ -54,13 +55,15 @@ public class PatronActionSessionService {
 
   private final PatronActionSessionRepository patronActionSessionRepository;
   private final ImmediatePatronNoticeService patronNoticeService;
+  private final LoanRepository loanRepository;
   protected final EventPublisher eventPublisher;
 
   public static PatronActionSessionService using(Clients clients,
-    PatronActionSessionRepository patronActionSessionRepository) {
+                                                 PatronActionSessionRepository patronActionSessionRepository, LoanRepository loanRepository) {
 
     return new PatronActionSessionService(patronActionSessionRepository,
       new ImmediatePatronNoticeService(clients, new LoanNoticeContextCombiner()),
+      loanRepository,
       new EventPublisher(clients.pubSubPublishingService()));
   }
 
@@ -86,7 +89,7 @@ public class PatronActionSessionService {
     UUID patronId = UUID.fromString(loan.getUserId());
     UUID loanId = UUID.fromString(loan.getId());
     PatronSessionRecord patronSessionRecord = new PatronSessionRecord(UUID.randomUUID(),
-        patronId, loanId, context.getSessionId(), PatronActionType.CHECK_IN);
+      patronId, loanId, context.getSessionId(), PatronActionType.CHECK_IN);
 
     return patronActionSessionRepository.create(patronSessionRecord)
       .thenApply(mapResult(v -> context));
@@ -106,7 +109,7 @@ public class PatronActionSessionService {
   }
 
   private CompletableFuture<Result<List<PatronSessionRecord>>> findSessions(String patronId,
-    PatronActionType actionType) {
+                                                                            PatronActionType actionType) {
 
     return patronActionSessionRepository.findPatronActionSessions(patronId, actionType,
       DEFAULT_SESSION_SIZE_PAGE_LIMIT);
@@ -123,6 +126,7 @@ public class PatronActionSessionService {
 
     return ofAsync(() -> sessions)
       .thenApply(mapResult(this::discardInvalidSessions))
+      .thenCompose(r -> r.after(this::fetchLatestPatronInfoAddedComment))
       .thenCompose(r -> r.after(this::sendNotice))
       .thenCompose(ignored -> deleteSessions(sessions));
   }
@@ -192,6 +196,15 @@ public class PatronActionSessionService {
       .thenApply(mapResult(v -> sessions));
   }
 
+  private CompletableFuture<Result<List<PatronSessionRecord>>> fetchLatestPatronInfoAddedComment(
+    List<PatronSessionRecord> sessions) {
+    List<CompletableFuture<Result<Loan>>> futures = new ArrayList<>();
+    sessions.forEach(s -> futures.add(loanRepository.fetchLatestPatronInfoAddedComment(s.getLoan())));
+
+    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+      .thenApply(v -> succeeded(sessions));
+  }
+
   private CompletableFuture<Result<Void>> publishNoticeErrorEvent(
     List<PatronSessionRecord> sessions, String errorMessage) {
 
@@ -214,13 +227,13 @@ public class PatronActionSessionService {
     return succeeded(null);
   }
 
-  private static List<PatronNoticeEvent> buildNoticeEvents(List<PatronSessionRecord> sessions) {
+  private List<PatronNoticeEvent> buildNoticeEvents(List<PatronSessionRecord> sessions) {
     return sessions.stream()
-      .map(PatronActionSessionService::buildPatronNoticeEvent)
+      .map(this::buildPatronNoticeEvent)
       .collect(Collectors.toList());
   }
 
-  private static PatronNoticeEvent buildPatronNoticeEvent(PatronSessionRecord session) {
+  private PatronNoticeEvent buildPatronNoticeEvent(PatronSessionRecord session) {
     Loan loan = session.getLoan();
 
     return new PatronNoticeEventBuilder()
