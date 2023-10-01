@@ -42,7 +42,7 @@ import static org.folio.circulation.support.results.ResultBinding.mapResult;
  * and to apply different isNoticeRelevant logic.
  * Reuses a handful of methods to set the notice contexts and fail if loan id is missing.
  */
-public class LoanScheduledNoticeReminderFeeHandler extends LoanScheduledNoticeHandler {
+public class LoanScheduledReminderHandler extends LoanScheduledNoticeHandler {
 
   private final ZonedDateTime systemTime;
   private final LoanPolicyRepository loanPolicyRepository;
@@ -60,7 +60,7 @@ public class LoanScheduledNoticeReminderFeeHandler extends LoanScheduledNoticeHa
 
 
 
-  public LoanScheduledNoticeReminderFeeHandler(Clients clients, LoanRepository loanRepository) {
+  public LoanScheduledReminderHandler(Clients clients, LoanRepository loanRepository) {
     super(clients, loanRepository);
     this.systemTime = ClockUtil.getZonedDateTime();
     this.loanPolicyRepository = new LoanPolicyRepository(clients);
@@ -69,9 +69,10 @@ public class LoanScheduledNoticeReminderFeeHandler extends LoanScheduledNoticeHa
     this.accountsStorageClient = clients.accountsStorageClient();
     this.feeFineActionsStorageClient = clients.feeFineActionsStorageClient();
 
-    log.debug("Instantiated LoanScheduledNoticeReminderFeeHandler");
+    log.debug("Instantiated LoanScheduledReminderHandler");
   }
 
+  @Override
   protected CompletableFuture<Result<ScheduledNotice>> handleContext(ScheduledNoticeContext context) {
     final ScheduledNotice notice = context.getNotice();
 
@@ -118,6 +119,10 @@ public class LoanScheduledNoticeReminderFeeHandler extends LoanScheduledNoticeHa
    * Sets current reminder as the most recent on the loan.
    */
   private CompletableFuture<Result<ScheduledNoticeContext>> updateLoan(ScheduledNoticeContext context) {
+    if (isNoticeIrrelevant(context)) {
+      return ofAsync(() -> context);
+    }
+
     return loanRepository.updateLoan(
       context.getLoan().withIncrementedRemindersLastFeeBilled(systemTime))
       .thenApply(r -> r.map(v -> context));
@@ -159,11 +164,17 @@ public class LoanScheduledNoticeReminderFeeHandler extends LoanScheduledNoticeHa
   }
 
   private CompletableFuture<Result<ScheduledNoticeContext>> persistAccount(ScheduledNoticeContext context) {
+    if (isNoticeIrrelevant(context)) {
+      return ofAsync(() -> context);
+    }
     return accountsStorageClient.post(context.getAccount().toJson())
       .thenApply(r -> Result.succeeded(context));
   }
 
   private CompletableFuture<Result<ScheduledNoticeContext>> createFeeFineAction(ScheduledNoticeContext context) {
+    if (isNoticeIrrelevant(context)) {
+      return ofAsync(() -> context);
+    }
     Account account = context.getAccount();
     ReminderFeeAction reminderFeeAction =
       new ReminderFeeAction()
