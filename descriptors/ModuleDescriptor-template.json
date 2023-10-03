@@ -1053,7 +1053,8 @@
             "accounts.collection.get",
             "circulation-storage.loans-history.collection.get",
             "accounts.item.post",
-            "feefineactions.item.post"
+            "feefineactions.item.post",
+            "circulation-storage.loans-history.collection.get"
           ],
           "unit": "minute",
           "delay": "5"
