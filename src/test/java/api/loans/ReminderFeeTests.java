@@ -610,7 +610,8 @@ class ReminderFeeTests extends APITests {
     verifyNumberOfSentNotices(2);
     verifyNumberOfPublishedEvents(NOTICE, 2);
     verifyNumberOfPublishedEvents(NOTICE_ERROR, 0);
-    waitAtMost(1, SECONDS).until(accountsClient::getAll, hasSize(2));
+    // Second reminder has zero fee, don't create account
+    waitAtMost(1, SECONDS).until(accountsClient::getAll, hasSize(1));
 
     latestRunTime = latestRunTime.plusDays(1).truncatedTo(DAYS.toChronoUnit()).plusMinutes(1);
     // Fifth processing (don't send yet).
@@ -621,7 +622,7 @@ class ReminderFeeTests extends APITests {
     verifyNumberOfSentNotices(2);
     verifyNumberOfPublishedEvents(NOTICE, 2);
     verifyNumberOfPublishedEvents(NOTICE_ERROR, 0);
-    waitAtMost(1, SECONDS).until(accountsClient::getAll, hasSize(2));
+    waitAtMost(1, SECONDS).until(accountsClient::getAll, hasSize(1));
 
     latestRunTime = latestRunTime.plusDays(1).truncatedTo(DAYS.toChronoUnit()).plusMinutes(1);
     // Sixth processing (send now).
@@ -632,7 +633,7 @@ class ReminderFeeTests extends APITests {
     verifyNumberOfSentNotices(3);
     verifyNumberOfPublishedEvents(NOTICE, 3);
     verifyNumberOfPublishedEvents(NOTICE_ERROR, 0);
-    waitAtMost(1, SECONDS).until(accountsClient::getAll, hasSize(3));
+    waitAtMost(1, SECONDS).until(accountsClient::getAll, hasSize(2));
 
     latestRunTime = latestRunTime.plusDays(1).truncatedTo(DAYS.toChronoUnit()).plusMinutes(1);
     // Seventh processing (no reminders to send).
@@ -643,7 +644,7 @@ class ReminderFeeTests extends APITests {
     verifyNumberOfSentNotices(3);
     verifyNumberOfPublishedEvents(NOTICE, 3);
     verifyNumberOfPublishedEvents(NOTICE_ERROR, 0);
-    waitAtMost(1, SECONDS).until(accountsClient::getAll, hasSize(3));
+    waitAtMost(1, SECONDS).until(accountsClient::getAll, hasSize(2));
 
     // Attempt renewal when Reminders Policy allowRenewalOfItemsWithReminderFees is set to 'False' and loan has reminders already sent out
     final Response renewalResponse = loansFixture.attemptRenewal(item, borrower);
