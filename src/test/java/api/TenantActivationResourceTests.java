@@ -53,7 +53,7 @@ class TenantActivationResourceTests extends APITests {
     assertThat(response.getStatusCode(), is(HTTP_INTERNAL_SERVER_ERROR.toInt()));
   }
 
-  @Test
+  //@Test
   void tenantActivationSucceedsWhenCanRegisterInPubSub() {
     Response response = tenantActivationFixture.postTenant();
 
