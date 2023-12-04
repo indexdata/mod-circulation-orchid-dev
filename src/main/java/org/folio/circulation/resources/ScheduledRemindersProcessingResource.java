@@ -33,7 +33,7 @@ public class ScheduledRemindersProcessingResource extends ScheduledNoticeProcess
 
   public ScheduledRemindersProcessingResource(HttpClient client) {
     super("/circulation/scheduled-reminders-processing", client);
-    log.debug("Instantiating reminders processing - notices and fees");
+    log.info("Instantiating reminders processing - notices and fees");
   }
 
   @Override
