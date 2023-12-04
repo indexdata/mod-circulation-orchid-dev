@@ -2,11 +2,7 @@ package org.folio.circulation.domain.notice.schedule;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.folio.circulation.domain.Account;
-import org.folio.circulation.domain.FeeFineAction;
-import org.folio.circulation.domain.FeeFineOwner;
-import org.folio.circulation.domain.Item;
-import org.folio.circulation.domain.Loan;
+import org.folio.circulation.domain.*;
 import org.folio.circulation.domain.policy.RemindersPolicy;
 import org.folio.circulation.infrastructure.storage.CalendarRepository;
 import org.folio.circulation.infrastructure.storage.ConfigurationRepository;
@@ -133,13 +129,11 @@ public class ScheduledReminderHandler extends LoanScheduledNoticeHandler {
   private CompletableFuture<Result<Boolean>> isOpenDay(ScheduledNoticeContext noticeContext) {
     String servicePointId = noticeContext.getLoan().getCheckoutServicePointId();
     return getSystemTimeInTenantsZone()
-      .thenCompose(tenantTime -> {
-        return calendarRepository.lookupOpeningDays(tenantTime.toLocalDate(),servicePointId)
-          .thenCompose(days -> {
-            Boolean openDay = days.value().getRequestedDay().isOpen();
-            return ofAsync(openDay);
-          });
-      });
+      .thenCompose(tenantTime -> calendarRepository.lookupOpeningDays(tenantTime.toLocalDate(),servicePointId)
+        .thenCompose(days -> {
+          Boolean openDay = days.value().getRequestedDay().isOpen();
+          return ofAsync(openDay);
+        }));
   }
 
   private CompletableFuture<ZonedDateTime> getSystemTimeInTenantsZone() {
@@ -168,7 +162,9 @@ public class ScheduledReminderHandler extends LoanScheduledNoticeHandler {
     }
 
     return loanRepository.updateLoan(
-      context.getLoan().withIncrementedRemindersLastFeeBilled(systemTime))
+      context.getLoan()
+        .withIncrementedRemindersLastFeeBilled(systemTime)
+        .updateAction(LoanAction.REMINDER_FEE.getValue()))
       .thenApply(r -> r.map(v -> context));
   }
 
@@ -266,23 +262,21 @@ public class ScheduledReminderHandler extends LoanScheduledNoticeHandler {
     Boolean canScheduleReminderUponClosedDate = loan.getOverdueFinePolicy().getRemindersPolicy().canScheduleReminderUponClosedDay();
 
     return configurationRepository.findTimeZoneConfiguration()
-      .thenCompose(tenantTimeZone -> {
-        return nextReminder
-          .nextNoticeDueOn(
-            systemTime,
-            tenantTimeZone.value(),
-            loan.getCheckoutServicePointId(),
-            calendarRepository
-          )
-          .thenCompose(nextRunTimeResult -> {
-            ScheduledNotice nextReminderNotice = context.getNotice()
-              .withNextRunTime(nextRunTimeResult.value().truncatedTo(ChronoUnit.HOURS));
-            nextReminderNotice.getConfiguration()
-              .setTemplateId(nextReminder.getNoticeTemplateId())
-              .setFormat(nextReminder.getNoticeFormat());
-            return ofAsync(nextReminderNotice);
-          });
-      });
+      .thenCompose(tenantTimeZone -> nextReminder
+        .nextNoticeDueOn(
+          systemTime,
+          tenantTimeZone.value(),
+          loan.getCheckoutServicePointId(),
+          calendarRepository
+        )
+        .thenCompose(nextRunTimeResult -> {
+          ScheduledNotice nextReminderNotice = context.getNotice()
+            .withNextRunTime(nextRunTimeResult.value().truncatedTo(ChronoUnit.HOURS));
+          nextReminderNotice.getConfiguration()
+            .setTemplateId(nextReminder.getNoticeTemplateId())
+            .setFormat(nextReminder.getNoticeFormat());
+          return ofAsync(nextReminderNotice);
+        }));
   }
 
   @Override
