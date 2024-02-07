@@ -725,7 +725,7 @@ class ReminderFeeTests extends APITests {
   }
 
   @Test
-  void willResetRemindersRescheduleNoticeOnManualDueDateChange() {
+  void willResetRemindersRescheduleNoticeOnRecall() {
     useFallbackPolicies(
       loanPolicyId,
       requestPolicyId,
@@ -759,19 +759,23 @@ class ReminderFeeTests extends APITests {
     assertThat("loan should have first reminder", loanAfterReminder.encode(),
       hasJsonPath("reminders.lastFeeBilled.number", is(1)));
 
-    ChangeDueDateRequestBuilder changeDueDate =
-      new ChangeDueDateRequestBuilder()
-        .forLoan(loan.getString("id"))
-        .withDueDate(dueDate.plusDays(10));
-    JsonObject loanAfterDueDateChange = changeDueDateFixture.attemptChangeDueDate(changeDueDate).getJson();
+    requestsFixture.place(new RequestBuilder()
+      .open()
+      .recall()
+      .forItem(item)
+      .by(usersFixture.james())
+      .withPickupServicePointId(servicePointsFixture.cd1().getId()));
+
     waitAtMost(1, SECONDS).until(scheduledNoticesClient::getAll, hasSize(1));
+    JsonObject loanAfterRecall = loansClient.getById(UUID.fromString(loan.getString("id"))).getJson();
+
     JsonObject rescheduledNotice = scheduledNoticesClient.getAll().get(0);
 
     assertThat("rescheduled notice should be scheduled later than initial notice",
       rescheduledNotice.getInstant("nextRunTime")
         .isAfter(initialScheduledNotice.getInstant("nextRunTime")));
-    assertThat("Loan should have no reminders after due date change",
-      not(loanAfterDueDateChange.containsKey("reminders")));
+    assertThat("Loan should have no reminders after renewal",
+      not(loanAfterRecall.containsKey("reminders")));
   }
 
 }
