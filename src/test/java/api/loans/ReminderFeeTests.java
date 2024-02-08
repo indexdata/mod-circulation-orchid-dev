@@ -730,4 +730,58 @@ class ReminderFeeTests extends APITests {
       not(loanAfterRenewal.containsKey("reminders")));
   }
 
+  @Test
+  void willResetRemindersRescheduleNoticeOnRecall() {
+    useFallbackPolicies(
+      loanPolicyId,
+      requestPolicyId,
+      noticePolicyId,
+      remindersOneDayBetweenNotOnClosedDaysId,
+      lostItemFeePolicyId);
+
+    // Check out item, all days open service point
+    final IndividualResource response = checkOutFixture.checkOutByBarcode(
+      new CheckOutByBarcodeRequestBuilder()
+        .forItem(item)
+        .to(borrower)
+        .on(loanDate)
+        .at(servicePointsFixture.cd1()));
+    final JsonObject loan = response.getJson();
+    ZonedDateTime dueDate = DateFormatUtil.parseDateTime(loan.getString("dueDate"));
+
+    waitAtMost(1, SECONDS).until(scheduledNoticesClient::getAll, hasSize(1));
+    JsonObject initialScheduledNotice = scheduledNoticesClient.getAll().get(0);
+
+    ZonedDateTime latestRunTime = dueDate.plusDays(2).truncatedTo(DAYS.toChronoUnit()).plusMinutes(1);
+    scheduledNoticeProcessingClient.runScheduledDigitalRemindersProcessing(latestRunTime);
+
+    verifyNumberOfScheduledNotices(1);
+    verifyNumberOfSentNotices(1);
+    verifyNumberOfPublishedEvents(NOTICE, 1);
+    verifyNumberOfPublishedEvents(NOTICE_ERROR, 0);
+    waitAtMost(1, SECONDS).until(accountsClient::getAll, hasSize(1));
+
+    JsonObject loanAfterReminder = loansClient.getById(UUID.fromString(loan.getString("id"))).getJson();
+    assertThat("loan should have first reminder", loanAfterReminder.encode(),
+      hasJsonPath("reminders.lastFeeBilled.number", is(1)));
+
+    requestsFixture.place(new RequestBuilder()
+      .open()
+      .recall()
+      .forItem(item)
+      .by(usersFixture.james())
+      .withPickupServicePointId(servicePointsFixture.cd1().getId()));
+
+    waitAtMost(1, SECONDS).until(scheduledNoticesClient::getAll, hasSize(1));
+    JsonObject loanAfterRecall = loansClient.getById(UUID.fromString(loan.getString("id"))).getJson();
+
+    JsonObject rescheduledNotice = scheduledNoticesClient.getAll().get(0);
+
+    assertThat("rescheduled notice should be scheduled later than initial notice",
+      rescheduledNotice.getInstant("nextRunTime")
+        .isAfter(initialScheduledNotice.getInstant("nextRunTime")));
+    assertThat("Loan should have no reminders after renewal",
+      not(loanAfterRecall.containsKey("reminders")));
+  }
+
 }
