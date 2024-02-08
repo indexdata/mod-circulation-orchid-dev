@@ -2,6 +2,7 @@ package api.loans;
 
 import api.support.APITests;
 import api.support.builders.*;
+import api.support.fakes.FakeModNotify;
 import api.support.http.IndividualResource;
 import api.support.http.ItemResource;
 import api.support.http.UserResource;
