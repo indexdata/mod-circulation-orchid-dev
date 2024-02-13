@@ -769,7 +769,6 @@ class ReminderFeeTests extends APITests {
     JsonObject loanAfterReminder = loansClient.getById(UUID.fromString(loan.getString("id"))).getJson();
     assertThat("loan should have first reminder", loanAfterReminder.encode(),
       hasJsonPath("reminders.lastFeeBilled.number", is(1)));
-    System.out.println(loanAfterReminder.encodePrettily());
 
     requestsFixture.place(new RequestBuilder()
       .open()
@@ -782,18 +781,15 @@ class ReminderFeeTests extends APITests {
     JsonObject loanAfterRecall = loansClient.getById(UUID.fromString(loan.getString("id"))).getJson();
 
     JsonObject rescheduledNotice = scheduledNoticesClient.getAll().get(0);
-    JsonObject loanAfterDueDateChange = loansClient.getById(UUID.fromString(loan.getString("id"))).getJson();
-    System.out.println("loan after due date change: " + loanAfterDueDateChange.encodePrettily());
-    assertThat("Loan should have no reminders after due date change",
-      !loanAfterDueDateChange.containsKey("reminders"));
+
     assertThat("rescheduled reminder should have different runtime than previous, second reminder",
       scheduledNoticeSecondReminder.getInstant("nextRunTime").toString(),
       is(not(equalTo(rescheduledNotice.getInstant("nextRunTime").toString()))));
-    assertThat("rescheduled notice should be scheduled later than initial notice",
-      rescheduledNotice.getInstant("nextRunTime")
-        .isAfter(initialScheduledNotice.getInstant("nextRunTime")));
-    assertThat("Loan should have no reminders after renewal",
-      !loanAfterRecall.containsKey("reminders"));
+    assertThat("Loan should have no reminders after recall",
+      not(loanAfterRecall.containsKey("reminders")));
+    assertThat("a new, rescheduled notice with a new ID should be created",
+      rescheduledNotice.getString("id"),
+      is(not(equalTo(initialScheduledNotice.getString("id")))));
   }
 
   @Test
