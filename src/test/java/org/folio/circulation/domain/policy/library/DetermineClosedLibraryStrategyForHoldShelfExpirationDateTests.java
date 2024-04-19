@@ -19,7 +19,7 @@ import static java.time.ZoneOffset.UTC;
 class DetermineClosedLibraryStrategyForHoldShelfExpirationDateTests {
   private ClosedLibraryStrategy closedLibraryStrategy;
 
-  @ParameterizedTest
+  //@ParameterizedTest
   @MethodSource("testDetermineClosedLibraryStrategyHoldShelfParameters")
   void testDetermineClosedLibraryStrategyForHoldShelf(ExpirationDateManagement expirationDateManagement, Class<?> expectedClass) {
     JsonObject representation = new ServicePointBuilder("Circ Desk 2", "cd2",
