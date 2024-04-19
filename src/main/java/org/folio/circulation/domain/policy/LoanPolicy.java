@@ -11,7 +11,9 @@ import static org.folio.circulation.support.json.JsonPropertyFetcher.getObjectPr
 import static org.folio.circulation.support.json.JsonPropertyFetcher.getProperty;
 import static org.folio.circulation.support.results.Result.succeeded;
 import static org.folio.circulation.support.utils.DateTimeUtil.isAfterMillis;
+import static org.folio.circulation.support.utils.LogUtil.resultAsString;
 
+import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,8 +22,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Loan;
-import org.folio.circulation.domain.Request;
 import org.folio.circulation.domain.RequestQueue;
 import org.folio.circulation.domain.RequestStatus;
 import org.folio.circulation.domain.RequestType;
@@ -37,6 +40,8 @@ import lombok.ToString;
 
 @ToString(onlyExplicitlyIncluded = true)
 public class LoanPolicy extends Policy {
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
   private static final String LOANS_POLICY_KEY = "loansPolicy";
   private static final String PERIOD_KEY = "period";
 
@@ -88,7 +93,8 @@ public class LoanPolicy extends Policy {
 
   public Result<ZonedDateTime> calculateInitialDueDate(Loan loan, RequestQueue requestQueue) {
     final ZonedDateTime systemTime = ClockUtil.getZonedDateTime();
-    return determineStrategy(requestQueue, false, false, systemTime).calculateDueDate(loan);
+    return determineStrategy(requestQueue, false, false, systemTime, loan.getItemId())
+      .calculateDueDate(loan);
   }
 
   public boolean hasRenewalPeriod() {
@@ -139,11 +145,8 @@ public class LoanPolicy extends Policy {
     return getIntegerProperty(getRenewalsPolicy(), "numberAllowed", 0);
   }
 
-  public DueDateStrategy determineStrategy(
-    RequestQueue requestQueue,
-    boolean isRenewal,
-    boolean isRenewalWithHoldRequest,
-    ZonedDateTime systemDate) {
+  public DueDateStrategy determineStrategy(RequestQueue requestQueue, boolean isRenewal,
+    boolean isRenewalWithHoldRequest, ZonedDateTime systemDate, String itemId) {
 
     final JsonObject loansPolicy = getLoansPolicy();
     final JsonObject renewalsPolicy = getRenewalsPolicy();
@@ -163,7 +166,7 @@ public class LoanPolicy extends Policy {
       else {
         boolean useAlternatePeriod = false;
         Period rollingPeriod = getPeriod(loansPolicy);
-        if(isAlternatePeriod(requestQueue)) {
+        if (isAlternatePeriod(requestQueue, itemId)) {
           rollingPeriod = getPeriod(holds, ALTERNATE_CHECKOUT_LOAN_PERIOD_KEY);
           useAlternatePeriod = true;
         }
@@ -178,7 +181,7 @@ public class LoanPolicy extends Policy {
           getRenewalFixedDueDateSchedules(), systemDate, this::loanPolicyValidationError);
       }
       else {
-        if(isAlternatePeriod(requestQueue)) {
+        if (isAlternatePeriod(requestQueue, itemId)) {
           return new RollingCheckOutDueDateStrategy(getId(), getName(),
             getPeriod(holds, ALTERNATE_CHECKOUT_LOAN_PERIOD_KEY),
               fixedDueDateSchedules, this::loanPolicyValidationError, false);
@@ -199,23 +202,17 @@ public class LoanPolicy extends Policy {
     return RenewalValidator.loanPolicyValidationError(this, message);
   }
 
-  private boolean isAlternatePeriod(RequestQueue requestQueue) {
-    final JsonObject holds = getHolds();
-    if(Objects.isNull(requestQueue)
-      || !holds.containsKey(ALTERNATE_CHECKOUT_LOAN_PERIOD_KEY)) {
+  private boolean isAlternatePeriod(RequestQueue requestQueue, String itemId) {
+    if (Objects.isNull(requestQueue) || !getHolds().containsKey(
+      ALTERNATE_CHECKOUT_LOAN_PERIOD_KEY)) {
+
       return false;
     }
-    Optional<Request> potentialRequest = requestQueue.getRequests().stream().skip(1).findFirst();
-    boolean isAlternateDueDateSchedule = false;
-    if(potentialRequest.isPresent()) {
-      Request request = potentialRequest.get();
-      boolean isHold = request.getRequestType() == RequestType.HOLD;
-      boolean isOpenNotYetFilled = request.getStatus() == RequestStatus.OPEN_NOT_YET_FILLED;
-      if(isHold && isOpenNotYetFilled) {
-        isAlternateDueDateSchedule = true;
-      }
-    }
-    return isAlternateDueDateSchedule;
+
+    return requestQueue.getRequests().stream()
+      .anyMatch(request -> request.getRequestType() == RequestType.HOLD &&
+        request.getStatus() == RequestStatus.OPEN_NOT_YET_FILLED &&
+        (!request.hasItem() || itemId.equals(request.getItemId())));
   }
 
   private JsonObject getLoansPolicy() {
@@ -470,16 +467,35 @@ public class LoanPolicy extends Policy {
 
     return minimumGuaranteedDueDateResult.combine(recallDueDateResult,
       (minimumGuaranteedDueDate, recallDueDate) -> {
-        if (loan.isOverdue() && !allowRecallsToExtendOverdueLoans()) {
+        log.debug("determineDueDate:: parameters minimumGuaranteedDueDateResult: {}, " +
+            "recallDueDateResult: {}, loan: {}", () -> resultAsString(minimumGuaranteedDueDateResult),
+          () -> resultAsString(recallDueDateResult), () -> loan);
 
-          return loan.getDueDate();
+        ZonedDateTime currentDueDate = loan.getDueDate();
+
+        if (loan.isOverdue() && !allowRecallsToExtendOverdueLoans()) {
+          log.info("determineDueDate:: loan is overdue and allowRecallsToExtendOverdueLoans is " +
+            "disabled - keeping current due date");
+          return currentDueDate;
         }
 
-        if (minimumGuaranteedDueDate == null ||
-          isAfterMillis(recallDueDate, minimumGuaranteedDueDate)) {
-          return recallDueDate;
+        if (isAfterMillis(recallDueDate, currentDueDate) && !allowRecallsToExtendOverdueLoans()) {
+          log.info("determineDueDate:: current due date is before recall due date and " +
+            "allowRecallsToExtendOverdueLoans is disabled - keeping current due date");
+          return currentDueDate;
         } else {
-          return minimumGuaranteedDueDate;
+          if (minimumGuaranteedDueDate == null ||
+            isAfterMillis(recallDueDate, minimumGuaranteedDueDate)) {
+
+            log.info("determineDueDate:: minimum guaranteed period doesn't exist or recall due " +
+              "date is after minimum guaranteed due date - changing due date to recall due date");
+            return recallDueDate;
+          } else {
+            log.info("determineDueDate:: minimum guaranteed period exists and recall due " +
+              "date is before minimum guaranteed due date - changing due date to minimum " +
+              "guaranteed due date");
+            return minimumGuaranteedDueDate;
+          }
         }
       });
   }
