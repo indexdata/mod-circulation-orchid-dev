@@ -1,11 +1,7 @@
 package org.folio.circulation.domain;
 
 import static java.util.Objects.isNull;
-import static org.folio.circulation.domain.representations.LoanProperties.BORROWER;
-import static org.folio.circulation.domain.representations.LoanProperties.LOAN_POLICY;
-import static org.folio.circulation.domain.representations.LoanProperties.LOST_ITEM_POLICY;
-import static org.folio.circulation.domain.representations.LoanProperties.OVERDUE_FINE_POLICY;
-import static org.folio.circulation.domain.representations.LoanProperties.PATRON_GROUP_ID_AT_CHECKOUT;
+import static org.folio.circulation.domain.representations.LoanProperties.*;
 import static org.folio.circulation.support.json.JsonPropertyWriter.write;
 
 import java.lang.invoke.MethodHandles;
@@ -13,6 +9,7 @@ import java.lang.invoke.MethodHandles;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.policy.Policy;
+import org.folio.circulation.domain.policy.RemindersPolicy;
 import org.folio.circulation.domain.representations.ItemSummaryRepresentation;
 import org.folio.circulation.domain.representations.LoanProperties;
 import org.folio.circulation.resources.context.RenewalContext;
@@ -57,6 +54,13 @@ public class LoanRepresentation {
       //When there is no user, it means that the loan has been anonymized
       log.info("extendedLoan:: there is no user, removing borrower");
       extendedRepresentation.remove(BORROWER);
+    }
+
+    if (loan.getOverdueFinePolicy().isReminderFeesPolicy()
+      && loan.getLastReminderFeeBilledNumber() != null) {
+        extendedRepresentation.getJsonObject(REMINDERS).put(
+          "renewalBlocked",
+          !loan.getOverdueFinePolicy().getRemindersPolicy().getAllowRenewalOfItemsWithReminderFees());
     }
 
     addPolicy(extendedRepresentation, loan.getLoanPolicy(), LOAN_POLICY);
