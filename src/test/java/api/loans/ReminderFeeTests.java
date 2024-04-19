@@ -733,6 +733,7 @@ class ReminderFeeTests extends APITests {
       !loanAfterRenewal.containsKey("reminders"));
   }
 
+
   @Test
   void willResetRemindersRescheduleNoticeOnRecall() {
     useFallbackPolicies(

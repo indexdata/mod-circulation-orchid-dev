@@ -1,6 +1,7 @@
 package org.folio.circulation.infrastructure.storage.inventory;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.function.Function.identity;
 import static org.folio.circulation.domain.ItemStatus.AVAILABLE;
 import static org.folio.circulation.domain.MultipleRecords.CombinationMatchers.matchRecordsById;
@@ -23,6 +24,7 @@ import static org.folio.circulation.support.utils.LogUtil.multipleRecordsAsStrin
 import java.lang.invoke.MethodHandles;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -173,13 +175,11 @@ public class ItemRepository {
 
     return result.combineAfter(this::fetchLocations,
       (items, locations) -> items
-        .combineRecords(locations, matchRecordsById(Item::getPermanentLocationId, Location::getId),
-          Item::withPermanentLocation, null)
-        .combineRecords(locations, matchRecordsById(Item::getEffectiveLocationId, Location::getId),
-          Item::withLocation, null));
+        .combineRecords(locations, Item::getPermanentLocationId, Item::withPermanentLocation, null)
+        .combineRecords(locations, Item::getEffectiveLocationId, Item::withLocation, null));
   }
 
-  private CompletableFuture<Result<MultipleRecords<Location>>> fetchLocations(
+  private CompletableFuture<Result<Map<String, Location>>> fetchLocations(
     MultipleRecords<Item> items) {
 
     final var locationIds = items.toKeys(Item::getEffectiveLocationId);
@@ -190,17 +190,18 @@ public class ItemRepository {
     allLocationIds.addAll(locationIds);
     allLocationIds.addAll(permanentLocationIds);
 
-    return locationRepository.fetchLocations(allLocationIds);
+    return locationRepository.fetchLocations(allLocationIds)
+      .thenApply(r -> r.map(records -> records.getRecordsMap(Location::getId)));
   }
 
   private CompletableFuture<Result<MultipleRecords<Item>>> fetchMaterialTypes(
     Result<MultipleRecords<Item>> result) {
 
-    return result.after(items ->
-      materialTypeRepository.getMaterialTypes(items)
+    return supplyAsync(() -> result.after(items -> materialTypeRepository.getMaterialTypes(items)
+        .thenApply(r -> r.map(records -> records.getRecordsMap(MaterialType::getId)))
         .thenApply(mapResult(materialTypes -> items.combineRecords(materialTypes,
-          matchRecordsById(Item::getMaterialTypeId, MaterialType::getId),
-          Item::withMaterialType, MaterialType.unknown()))));
+          Item::getMaterialTypeId, Item::withMaterialType, MaterialType.unknown())))))
+      .thenCompose(Function.identity());
   }
 
   private CompletableFuture<Result<MultipleRecords<Item>>> fetchLoanTypes(
@@ -209,10 +210,11 @@ public class ItemRepository {
     return result.after(items -> {
       final var loanTypeIdsToFetch = items.toKeys(Item::getLoanTypeId);
 
-      return loanTypeRepository.findByIds(loanTypeIdsToFetch)
+      return supplyAsync(() -> loanTypeRepository.findByIds(loanTypeIdsToFetch)
+        .thenApply(r -> r.map(records -> records.getRecordsMap(LoanType::getId)))
         .thenApply(mapResult(loanTypes -> items.combineRecords(loanTypes,
-          matchRecordsById(Item::getLoanTypeId, LoanType::getId),
-          Item::withLoanType, LoanType.unknown())));
+          Item::getLoanTypeId, Item::withLoanType, LoanType.unknown()))))
+        .thenCompose(Function.identity());
     });
   }
 
@@ -222,10 +224,11 @@ public class ItemRepository {
     return result.after(items -> {
       final var instanceIds = items.toKeys(Item::getInstanceId);
 
-      return instanceRepository.fetchByIds(instanceIds)
+      return supplyAsync(() -> instanceRepository.fetchByIds(instanceIds)
+        .thenApply(r -> r.map(records -> records.getRecordsMap(Instance::getId)))
         .thenApply(mapResult(instances -> items.combineRecords(instances,
-          matchRecordsById(Item::getInstanceId, Instance::getId),
-          Item::withInstance, Instance.unknown())));
+          Item::getInstanceId, Item::withInstance, Instance.unknown()))))
+        .thenCompose(Function.identity());
     });
   }
 
@@ -235,10 +238,11 @@ public class ItemRepository {
     return result.after(items -> {
       final var holdingsIds = items.toKeys(Item::getHoldingsRecordId);
 
-      return holdingsRepository.fetchByIds(holdingsIds)
+      return supplyAsync(() -> holdingsRepository.fetchByIds(holdingsIds)
+        .thenApply(r -> r.map(records -> records.getRecordsMap(Holdings::getId)))
         .thenApply(mapResult(holdings -> items.combineRecords(holdings,
-          matchRecordsById(Item::getHoldingsRecordId, Holdings::getId),
-          Item::withHoldings, Holdings.unknown())));
+          Item::getHoldingsRecordId, Item::withHoldings, Holdings.unknown()))))
+        .thenCompose(Function.identity());
     });
   }
 

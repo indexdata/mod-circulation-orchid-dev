@@ -501,6 +501,7 @@ public class Loan implements ItemRelatedRecord, UserRelatedRecord {
     changeDueDate(dueDate);
     incrementRenewalCount();
     changeActionComment(actionComment);
+    resetReminders();
 
     return this;
   }
@@ -743,6 +744,7 @@ public class Loan implements ItemRelatedRecord, UserRelatedRecord {
   public void closeLoanAsLostAndPaid() {
     log.debug("closeLoanAsLostAndPaid:: ");
     closeLoan(CLOSED_LOAN);
+    changeReturnDate(ClockUtil.getZonedDateTime());
     changeItemStatusForItemAndLoan(ItemStatus.LOST_AND_PAID);
   }
 
